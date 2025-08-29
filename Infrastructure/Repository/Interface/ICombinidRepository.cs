@@ -17,6 +17,6 @@ namespace Infrastructure.Repository.Interface
         /// </summary>
         /// <param name="combinid"></param>
         /// <returns></returns>
-        public bool Update(CombinidView combinid);
+        public bool Update(UpdateCombinid combinid);
     }
 }

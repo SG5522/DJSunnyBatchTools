@@ -1,4 +1,5 @@
 ﻿using DBEntities.Entities;
+using Infrastructure.Models;
 
 namespace Infrastructure.Repository.Interface
 {
@@ -8,6 +9,20 @@ namespace Infrastructure.Repository.Interface
         /// 新增證件(SQL)
         /// </summary>
         /// <param name="identifycard"></param>
-        int Insert(Identifycard identifycard);
+        int Insert(IdentifyCard identifycard);
+
+        /// <summary>
+        /// 依Idunumber為Key 複製證件
+        /// </summary>
+        /// <param name="copyParam"></param>
+        /// <returns></returns>
+        int InsertCopy(CopyParam copyParam);
+
+        /// <summary>
+        /// 依Idnumber 找出該筆資料(可能證件正反面) 更新新的IDNumber
+        /// </summary>
+        /// <param name="copyParam"></param>
+        /// <returns></returns>
+        int UpdateIDNumber(CopyParam copyParam);
     }
 }

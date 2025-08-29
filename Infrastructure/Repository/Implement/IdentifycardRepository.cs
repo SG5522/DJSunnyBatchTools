@@ -1,8 +1,8 @@
 ﻿using Dapper;
 using DBEntities.Const;
 using DBEntities.Entities;
+using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
-using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace Infrastructure.Repository.Implement
@@ -24,12 +24,38 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public int Insert(Identifycard identifycard)
+        public int Insert(IdentifyCard identifycard)
         {
-            string sql = $@"INSERT into {DbTableName.Identifycard} (IDnumber, IMAGEFPATH, Order, [DateTime], housebook) 
+            string sql = $@"INSERT into {DbTableName.IdentifyCard} (IDnumber, IMAGEFPATH, [Order], [DateTime], housebook) 
                             VALUES (@IDnumber, @Imagefpath, @Order, @DateTime, @Housebook)";
 
             return connection.Execute(sql, identifycard, transaction);            
+        }
+
+        /// <inheritdoc/>
+        public int InsertCopy(CopyParam copyParam)
+        {
+            string sql = $@"INSERT into {DbTableName.IdentifyCard} (IDnumber, IMAGEFPATH, [Order], [DateTime], housebook) 
+                            SELECT 
+                            @NewIDNumber AS IDnumber,
+                            old.IMAGEFPATH,
+                            old.[Order],           
+                            old.[DateTime],
+                            old.housebook
+                            FROM {DbTableName.IdentifyCard} AS old
+                            WHERE IDNumber = @IDNumber ";
+
+            return connection.Execute(sql, copyParam, transaction);
+        }
+
+        /// <inheritdoc/>
+        public int UpdateIDNumber(CopyParam copyParam)
+        {
+            string sql = $@"Update {DbTableName.IdentifyCard} 
+                            Set IDnumber = @NewIDNumber,
+                            WHERE IDnumber = @IDNumber ";
+
+            return connection.Execute(sql, copyParam, transaction);            
         }
     }
 }

@@ -5,7 +5,7 @@ namespace DBEntities.Entities;
 
 public partial class Photo
 {
-    public string Idnumber { get; set; } = null!;
+    public string IDNumber { get; set; } = null!;
 
     public string? ImagePath { get; set; }
 

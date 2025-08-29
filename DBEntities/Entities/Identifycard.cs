@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿
 namespace DBEntities.Entities;
 
-public partial class Identifycard
+public partial class IdentifyCard
 {
     public string Idnumber { get; set; } = null!;
 

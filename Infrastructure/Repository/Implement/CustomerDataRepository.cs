@@ -1,8 +1,8 @@
 ﻿using Dapper;
 using DBEntities.Const;
 using DBEntities.Entities;
+using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
-using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace Infrastructure.Repository.Implement
@@ -24,48 +24,41 @@ namespace Infrastructure.Repository.Implement
             this.transaction = transaction;            
         }
 
-        private class CustomerParam
-        {
-            public string NewIdnumber { get; set; } = string.Empty;
-            public string Idnumber { get; set; } = string.Empty;
-        }
-
         /// <inheritdoc/>
         public int Insert(Customerdata customerdata)
         {
-
-            string sql = $@"INSERT into {DbTableName.Customerdata}
-                        (Idnumber, Name, Sex, Birthday, Bplace, 
-                        Issued, HomeAddress, MailAddress, TelPhone, MobilePhone, 
-                        Email, OccupationCode, IsTempId, CustomerType) VALUES  
-                        (@Idnumber, 
-                        @Name, 
-                        @Sex, 
-                        @Birthday, 
-                        @Bplace, 
-                        @Issued, 
-                        @HomeAddress, 
-                        @MailAddress, 
-                        @TelPhone, 
-                        @MobilePhone, 
-                        @Email, 
-                        @OccupationCode, 
+            string sql = $@"INSERT into {DbTableName.CustomerData}
+                        (Idnumber, Name, Sex, Birthday, Bplace,
+                        Issued, HomeAddress, MailAddress, TelPhone, MobilePhone,
+                        Email, OccupationCode, IsTempId, CustomerType) VALUES
+                        (@Idnumber,
+                        @Name,
+                        @Sex,
+                        @Birthday,
+                        @Bplace,
+                        @Issued,
+                        @HomeAddress,
+                        @MailAddress,
+                        @TelPhone,
+                        @MobilePhone,
+                        @Email,
+                        @OccupationCode,
                         @IsTempId,
                         @CustomerType)";
 
-            return connection.Execute(sql, customerdata, transaction);            
+            return connection.Execute(sql, customerdata, transaction);       
         }
 
         /// <inheritdoc/>
-        public int InsertWithOldIdnumber(string idNumber, int count)
+        public int CopyWithNewId(CopyParam copyParam)
         {    
-            string sql = $@"INSERT into {DbTableName.Customerdata}
-                        (Idnumber, Name, Sex, Birthday, Bplace, 
-                        Issued, HomeAddress, MailAddress, TelPhone, MobilePhone, 
-                        Email, OccupationCode, IsTempId, CustomerType) VALUES  
-                        SELECT 
-                            @NewSqlIdnumber AS IDnumber,
-                            oldCust.Name,     
+            string sql = $@"INSERT into {DbTableName.CustomerData}
+                        (Idnumber, Name, Sex, Birthday, Bplace,
+                        Issued, HomeAddress, MailAddress, TelPhone, MobilePhone,
+                        Email, OccupationCode, IsTempId, CustomerType) VALUES
+                        SELECT
+                            @NewIdnumber AS IDnumber,
+                            oldCust.Name,
                             oldCust.Sex,
                             oldCust.Birthday,
                             oldCust.Bplace,
@@ -77,18 +70,21 @@ namespace Infrastructure.Repository.Implement
                             oldCust.Email,
                             oldCust.OccupationCode,
                             oldCust.IsTempId,
-                            oldCust.CustomerType,                        
+                            oldCust.CustomerType,
                         FROM Customerdata AS oldCust
-                        WHERE SN = '@Idnumber';";
+                        WHERE SN = @IDNumber";
 
-            CustomerParam customerParam = new()
-            {
-                NewIdnumber = $"{idNumber}~{count}",
-                Idnumber = idNumber
-            };
-
-            return connection.Execute(sql, customerParam, transaction);
+            return connection.Execute(sql, copyParam, transaction);
         }
 
+        /// <inheritdoc/>
+        public int Delete(CopyParam copyParam)
+        {
+            string sql = $@"Delete FROM {DbTableName.CustomerData}
+                        WHERE SN = @IDNumber";
+
+            return connection.Execute(sql, copyParam, transaction);
+
+        }
     }
 }

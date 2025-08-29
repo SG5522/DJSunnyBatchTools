@@ -13,7 +13,7 @@ namespace DBEntities.Const
         public const string AgentSealset = "Agent_sealset";
         public const string CheckLog = "CheckLog";
         public const string Combinid = "combinid";
-        public const string Customerdata = "customerdata";
+        public const string CustomerData = "customerdata";
         public const string Docset = "docset";
         public const string Document = "document";
         public const string Hcombinid = "hcombinid";
@@ -24,7 +24,7 @@ namespace DBEntities.Const
         public const string Hseal = "hseal";
         public const string Hsealcard = "hsealcard";
         public const string Hsealset = "hsealset";
-        public const string Identifycard = "identifycard";
+        public const string IdentifyCard = "identifycard";
         public const string Ipdef = "ipdef";
         public const string Logfst = "logfst";
         public const string Maccount = "maccount";

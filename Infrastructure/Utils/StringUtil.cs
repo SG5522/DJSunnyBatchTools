@@ -2,7 +2,11 @@
 {
     public static class StringUtil
     {
-        public static string GetRandomSn()        
-            => DateTime.Now.ToString("yyyyMMddffff") + new Random().Next(11, 99).ToString();        
+        /// <summary>
+        /// 原陽信系統取得Oldidentifycard的SN方法
+        /// </summary>
+        /// <returns></returns>
+        public static string GetRandomSN()
+            => DateTime.Now.ToString("yyyyMMddffffff") + new Random().Next(1111, 9999).ToString();
     }
 }

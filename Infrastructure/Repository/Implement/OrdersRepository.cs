@@ -23,6 +23,39 @@ namespace Infrastructure.Repository.Implement
             this.transaction = transaction;            
         }
 
+        public List<OrdersView> GetOrders (List<string> customerTypes)
+        {
+            string sql = $@"SELECT 
+                            o.Accno,
+                            o.IDNumber, 
+                            CASE
+                            WHEN c.CustomerType = '' THEN -1
+                            ELSE TRY_CAST(c.CustomerType AS INT)
+                            END AS CustomerType
+                            From {DbTableName.Orders} As o
+                            Inner Join {DbTableName.CustomerData} As c on o.IDnumber = c.Idnumber
+                            Inner Join {DbTableName.Maincase} AS m ON o.Accno = m.AccNo
+                            WHERE c.CustomerType in @customerTypes
+                            And c.IDnumber NOT like '%~%'
+                            ORDER BY o.IDNumber,
+                            m.createDate";
+            
+
+            return connection.Query<OrdersView>(sql, new { customerTypes }).ToList();
+        }
+
+        public List<string> GetDuplicateOrderIds(List<string> idsToSearch)
+        {
+            string sql = $@"SELECT 
+                            IDNumber
+                            From {DbTableName.Orders}                            
+                            WHERE IDnumber IN @Ids                            
+                            GROUP BY IDNumber 
+                            HAVING COUNT(IDNumber) > 1";
+                
+            return connection.Query<string>(sql, new { Ids = idsToSearch }, transaction).ToList();
+        }
+
         /// <inheritdoc/>
         public int Insert(Orders orders)
         {            
@@ -31,9 +64,8 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public int Update(OrdersView ordersView)
+        public int Update(UpdateOrders ordersView)
         {
-
             string sql = $@"Update {DbTableName.Orders} 
                             Set Idnumber = '@NewIDNumber '
                             Where Accno ='@AccNo'

@@ -3,7 +3,6 @@ using DBEntities.Const;
 using DBEntities.Entities;
 using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
-using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace Infrastructure.Repository.Implement

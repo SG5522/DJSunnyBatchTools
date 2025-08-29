@@ -2,7 +2,7 @@
 
 namespace Infrastructure.Models
 {
-    public class CombinidView : Combinid
+    public class UpdateCombinid : Combinid
     {        
         /// <summary>
         /// 更新後的Idnumber

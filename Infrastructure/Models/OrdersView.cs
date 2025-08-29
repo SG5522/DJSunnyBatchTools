@@ -1,12 +1,27 @@
 ﻿using DBEntities.Entities;
+using DBEntities.Const;
+using CommonLib.Extensions;
 
 namespace Infrastructure.Models
 {
     public class OrdersView : Orders
     {        
         /// <summary>
-        /// 更新後的Idnumber
+        /// 使用者
         /// </summary>
-        public string NewIDNumber { get; set; } = string.Empty;
+        public CustomerType CustomerType { get; set; }
+
+        /// <summary>
+        /// 是否重複
+        /// </summary>
+        public bool IsSingle { get; set; } = false;
+
+
+        public override string ToString()
+        {
+            string customerTypeString = CustomerType.GetDescription();
+            
+            return $"AccNo: {AccNo}, IDNumber: {IDNumber}, CustomerType： {customerTypeString}";
+        }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Dapper;
 using DBEntities.Const;
 using DBEntities.Entities;
+using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using Infrastructure.Utils;
-using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace Infrastructure.Repository.Implement
@@ -21,13 +21,22 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
+        public List<OldPhoto> GetOldPhotos(string idNumber)
+        {
+            string sql = $@"SELECT * FROM oldidentifycard
+                            WHERE IDnumber = @idNumber";
+
+            return connection.Query<OldPhoto>(sql, new { idNumber }).ToList();
+        }
+
+        /// <inheritdoc/>
         public int Inserts(List<OldPhoto> oldPhotos, string idNumber)
         {
             int result = default;
               
             foreach (OldPhoto oldPhoto in oldPhotos)
             {
-                oldPhoto.Sn = StringUtil.GetRandomSn();
+                oldPhoto.Sn = StringUtil.GetRandomSN();
                 oldPhoto.Idnumber = idNumber;
                 result += Insert(oldPhoto);
             }
@@ -42,6 +51,16 @@ namespace Infrastructure.Repository.Implement
                             VALUES (@IDnumber, @ImagePath, @FeatureJson, @DateTime, @Sn)";
 
             return connection.Execute(sql, oldPhoto, transaction);
+        }
+
+        /// <inheritdoc/>
+        public int UpdateIDNumber(CopyParam copyParam)
+        {
+            string sql = $@"Update {DbTableName.OldPhoto} 
+                            Set IDnumber = @NewIDNumber,
+                            WHERE IDnumber = @IDNumber ";
+
+            return connection.Execute(sql, copyParam, transaction);
         }
     }
 }
