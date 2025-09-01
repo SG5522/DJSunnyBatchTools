@@ -41,7 +41,7 @@ namespace Infrastructure.Repository.Implement
                             m.createDate";
             
 
-            return connection.Query<OrdersView>(sql, new { customerTypes }).ToList();
+            return connection.Query<OrdersView>(sql, new { customerTypes }, transaction).ToList();
         }
 
         public List<string> GetDuplicateOrderIds(List<string> idsToSearch)
@@ -57,21 +57,21 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public int Insert(Orders orders)
+        public int InsertNewIDNumber(CopyParam copyParam)
         {            
-            string sql = $@"INSERT into {DbTableName.Orders} (AccNo, IDnumber) VALUES (@AccNo, @IDNumber)";
-            return connection.Execute(sql, orders, transaction);                            
+            string sql = $@"INSERT into {DbTableName.Orders} (AccNo, IDnumber) VALUES (@AccNo, @NewIDNumber)";
+            return connection.Execute(sql, copyParam, transaction);                            
         }
 
         /// <inheritdoc/>
-        public int Update(UpdateOrders ordersView)
+        public int Update(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.Orders} 
                             Set Idnumber = '@NewIDNumber '
                             Where Accno ='@AccNo'
                             And Idnumber = '@IDNumber'";
 
-            return connection.Execute(sql, ordersView, transaction);                
+            return connection.Execute(sql, copyParam, transaction);                
         }
     }
 }

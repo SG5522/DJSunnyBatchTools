@@ -55,7 +55,7 @@ namespace Infrastructure.Repository.Implement
             string sql = $@"INSERT into {DbTableName.CustomerData}
                         (Idnumber, Name, Sex, Birthday, Bplace,
                         Issued, HomeAddress, MailAddress, TelPhone, MobilePhone,
-                        Email, OccupationCode, IsTempId, CustomerType) VALUES
+                        Email, OccupationCode, CustomerType)
                         SELECT
                             @NewIdnumber AS IDnumber,
                             oldCust.Name,
@@ -68,22 +68,21 @@ namespace Infrastructure.Repository.Implement
                             oldCust.TelPhone,
                             oldCust.MobilePhone,
                             oldCust.Email,
-                            oldCust.OccupationCode,
-                            oldCust.IsTempId,
-                            oldCust.CustomerType,
+                            oldCust.OccupationCode,                            
+                            oldCust.CustomerType
                         FROM Customerdata AS oldCust
-                        WHERE SN = @IDNumber";
+                        WHERE oldCust.IDnumber = @IDNumber";
 
             return connection.Execute(sql, copyParam, transaction);
         }
 
         /// <inheritdoc/>
-        public int Delete(CopyParam copyParam)
+        public int Delete(string idNumber)
         {
             string sql = $@"Delete FROM {DbTableName.CustomerData}
-                        WHERE SN = @IDNumber";
+                        WHERE IDnumber = @IDNumber";
 
-            return connection.Execute(sql, copyParam, transaction);
+            return connection.Execute(sql, new { IDNumber = idNumber }, transaction);
 
         }
     }

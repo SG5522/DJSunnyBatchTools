@@ -23,10 +23,10 @@ namespace Infrastructure.Repository.Implement
         /// <inheritdoc/>
         public List<OldPhoto> GetOldPhotos(string idNumber)
         {
-            string sql = $@"SELECT * FROM oldidentifycard
+            string sql = $@"SELECT * FROM {DbTableName.OldPhoto}
                             WHERE IDnumber = @idNumber";
 
-            return connection.Query<OldPhoto>(sql, new { idNumber }).ToList();
+            return connection.Query<OldPhoto>(sql, new { idNumber }, transaction).ToList();
         }
 
         /// <inheritdoc/>
@@ -57,7 +57,7 @@ namespace Infrastructure.Repository.Implement
         public int UpdateIDNumber(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.OldPhoto} 
-                            Set IDnumber = @NewIDNumber,
+                            Set IDnumber = @NewIDNumber 
                             WHERE IDnumber = @IDNumber ";
 
             return connection.Execute(sql, copyParam, transaction);

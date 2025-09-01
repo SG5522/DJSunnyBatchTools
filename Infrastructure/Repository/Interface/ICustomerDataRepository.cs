@@ -22,8 +22,8 @@ namespace Infrastructure.Repository.Interface
         /// <summary>
         /// 依IDNumber 為依據刪除
         /// </summary>
-        /// <param name="copyParam"></param>
+        /// <param name="idNumber"></param>
         /// <returns></returns>
-        int Delete(CopyParam copyParam);
+        int Delete(string idNumber);
     }
 }

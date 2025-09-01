@@ -39,12 +39,12 @@ namespace Infrastructure.Repository.Implement
         {
             string sql = $@"INSERT into {DbTableName.Photo} (IDnumber, ImagePath, featureJson, [DateTime]) 
                             SELECT 
-                            @NewIdnumber AS IDnumber,
+                            @NewIDNumber AS IDnumber,
                             old.ImagePath,
                             old.featureJson,           
                             old.[DateTime]
                             FROM {DbTableName.Photo} AS old
-                            WHERE IDNumber = @IdNumber";
+                            WHERE IDNumber = @IDNumber";
 
             return connection.Execute(sql, copyParam, transaction);
         }
@@ -78,9 +78,9 @@ namespace Infrastructure.Repository.Implement
         private int Delete (string idNumber)
         {
             string sql = $@"DELETE FROM {DbTableName.Photo} 
-                            WHERE IDnumber = @idNumber";
+                            WHERE IDnumber = @IDNumber";
 
-            return connection.Execute(sql, idNumber, transaction);            
+            return connection.Execute(sql, new { IDNumber = idNumber }, transaction);            
         }
     }
 }

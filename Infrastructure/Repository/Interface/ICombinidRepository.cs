@@ -8,15 +8,21 @@ namespace Infrastructure.Repository.Interface
         /// <summary>
         /// 新增
         /// </summary>
-        /// <param name="combinid"></param>
+        /// <param name="copyParam"></param>
         /// <returns></returns>
-        bool Insert(Combinid combinid);
+        int InsertNewIDNumber(CopyParam copyParam);
+
+        /// <summary>
+        /// 複製
+        /// </summary>
+        /// <param name="copyParam"></param>
+        int InsertCopy(CopyParam copyParam);
 
         /// <summary>
         /// 修改
         /// </summary>
-        /// <param name="combinid"></param>
+        /// <param name="copyParam"></param>
         /// <returns></returns>
-        public bool Update(UpdateCombinid combinid);
+        public int Update(CopyParam copyParam);
     }
 }

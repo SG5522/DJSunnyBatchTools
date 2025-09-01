@@ -1,5 +1,4 @@
-﻿using DBEntities.Entities;
-using Infrastructure.Models;
+﻿using Infrastructure.Models;
 
 namespace Infrastructure.Repository.Interface
 {
@@ -22,15 +21,15 @@ namespace Infrastructure.Repository.Interface
         /// <summary>
         /// 新增
         /// </summary>
-        /// <param name="orders"></param>
+        /// <param name="copyParam"></param>
         /// <returns></returns>
-        int Insert(Orders orders);
+        int InsertNewIDNumber(CopyParam copyParam);
 
         /// <summary>
         /// 修改
         /// </summary>
-        /// <param name="ordersView"></param>
+        /// <param name="copyParam"></param>
         /// <returns></returns>
-        int Update(UpdateOrders ordersView);
+        int Update(CopyParam copyParam);
     }
 }

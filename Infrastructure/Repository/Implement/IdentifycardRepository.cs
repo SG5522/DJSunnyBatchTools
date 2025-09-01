@@ -52,7 +52,7 @@ namespace Infrastructure.Repository.Implement
         public int UpdateIDNumber(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.IdentifyCard} 
-                            Set IDnumber = @NewIDNumber,
+                            Set IDnumber = @NewIDNumber 
                             WHERE IDnumber = @IDNumber ";
 
             return connection.Execute(sql, copyParam, transaction);            

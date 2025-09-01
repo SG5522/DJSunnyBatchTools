@@ -31,7 +31,7 @@ namespace Infrastructure.Repository.Implement
             string sql = $@"SELECT * FROM {DbTableName.Oldidentifycard}
                             WHERE IDnumber = @idNumber";
 
-            return connection.Query<OldIdentifycard>(sql, new { idNumber }).ToList();
+            return connection.Query<OldIdentifycard>(sql, new { idNumber }, transaction).ToList();
         }
 
         /// <inheritdoc/>
@@ -51,7 +51,7 @@ namespace Infrastructure.Repository.Implement
         /// <inheritdoc/>
         public int Insert(OldIdentifycard oldIdentifycard)
         {
-            string sql = $@"INSERT into {DbTableName.Oldidentifycard} (IDnumber, IMAGEFPATH, Order, [DateTime], housebook, SN)
+            string sql = $@"INSERT into {DbTableName.Oldidentifycard} (IDnumber, IMAGEFPATH, [Order], [DateTime], housebook, SN)
                             VALUES (@IDnumber, @Imagefpath, @Order, @DateTime, @Housebook, @Sn)";
             
             return connection.Execute(sql, oldIdentifycard, transaction);
@@ -62,7 +62,7 @@ namespace Infrastructure.Repository.Implement
         public int UpdateIDNumber(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.Oldidentifycard} 
-                            Set IDnumber = @NewIDNumber,
+                            Set IDnumber = @NewIDNumber 
                             WHERE IDnumber = @IDNumber ";
 
             return connection.Execute(sql, copyParam, transaction);

@@ -24,24 +24,37 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public bool Insert(Combinid combinid)
+        public int InsertNewIDNumber(CopyParam copyParam)
         {
-            string sql = $@"INSERT into {DbTableName.Combinid} (AccNo, IDnumber, BranchId) VALUES (@AccNo, @IDNumber, @BranchId)";
-            int insertCount = connection.Execute(sql, combinid, transaction);
-            //logger.LogInformation($"新增 Combinid 筆數為： {insertCount} "); 之後加到服務中
-            return true;
+            string sql = $@"INSERT into {DbTableName.Combinid} (AccNo, IDnumber, BranchId) VALUES (@AccNo, @NewIDNumber, @BranchId)";
+            return connection.Execute(sql, copyParam, transaction);
+            //logger.LogInformation($"新增 Combinid 筆數為： {insertCount} "); 之後加到服務中            
         }
 
         /// <inheritdoc/>
-        public bool Update(CombinidView combinid)
+        public int InsertCopy(CopyParam copyParam)
+        {
+            string sql = $@"INSERT into {DbTableName.Combinid} (AccNo, IDnumber, BranchId) 
+                            SELECT 
+                            oldCombinid.AccNo,
+                            @NewIdnumber AS IDnumber,
+                            oldCombinid.BranchId
+                        FROM {DbTableName.Combinid} AS oldCombinid
+                        WHERE oldCombinid.AccNo = @AccNo
+                        AND oldCombinid.IDnumber = @IDNumber";                        
+            return connection.Execute(sql, copyParam, transaction);                    
+        }
+
+
+        /// <inheritdoc/>
+        public int Update(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.Combinid} 
                             Set Idnumber = '@NewIDNumber'
                             Where Accno = '@AccNo'
                             AND IDnumber = '@IDNumber'";
 
-            connection.Execute(sql, combinid, transaction);
-            return true;            
+            return connection.Execute(sql, copyParam, transaction);                         
         }
     }
 }
