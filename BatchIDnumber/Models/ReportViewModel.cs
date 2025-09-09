@@ -1,19 +1,28 @@
-﻿
-
+﻿using BatchIDnumber.Const;
+using DBEntities.Const;
 using Infrastructure.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace BatchIDnumber.Models
 {
-    public class ReportViewModel : ProcessCount
+    public class ReportViewModel : CopyParam
     {
-        public ReportViewModel() => CopyParam = new();
+        /// <summary>
+        /// 戶名
+        /// </summary>
+        [Display(Order = 3)]
+        public string AccName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 
+        /// 身份別
         /// </summary>
-        public CopyParam CopyParam { get; set; }
+        [Display(Order = 4)]
+        public CustomerType CustomerType { get; set; }
 
-        public string ToLog()
-         => $@"Accno:{CopyParam.AccNo} IDNumber:{CopyParam.IDNumber} NewIDNumber:{CopyParam.NewIDNumber}";
+        /// <summary>
+        /// 是否成功
+        /// </summary>
+        [Display(Order = 5)]
+        public IDNumberChangeResult Result { get; set; } = IDNumberChangeResult.Failure;
     }
 }

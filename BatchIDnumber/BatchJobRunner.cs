@@ -1,4 +1,5 @@
 ﻿using BatchIDnumber.Service.Interface;
+using CommonLib.Utils;
 using DBEntities.Entities;
 using Infrastructure.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,26 +28,37 @@ namespace BatchIDnumber
             using (IServiceScope scope = serviceProvider.CreateScope())
             {
                 var batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
-                List<OrdersView> orders = batchService.GetOrders(new List<string> { "5", "6", "99" });
+                //List<OrdersView> orders = batchService.GetOrders(new List<string> { "5", "6", "99" });
 
-                using (LogContext.PushProperty("EventType", "Input"))
-                {                    
-                    logger.LogInformation($"Total orders: {orders.Count}");
-                    
-                    // 透過迴圈，讓每一筆 Orders 都成為獨立的日誌記錄
-                    //foreach (OrdersView order in orders)
-                    //{
-                    //    logger.LogInformation($"{order}");
-                    //}
-                }
+                //foreach (var order in orders)
+                //{
+                //    order.RandomCustomerType();
+                //}
+                //JsonFileUtil.WriteToJsonFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "Report/input.json"));
+                //CsvFileUtil.WriteToCsvFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "Report/input.csv"));
+                List<OrdersView>? orders = CsvFileUtil.ReadFromCsvFile<OrdersView>(Path.Combine(Directory.GetCurrentDirectory(), "Report/input.csv"));
 
-                // 在這個區塊內，所有日誌都會帶有 EventType = Process 的屬性
-                using (LogContext.PushProperty("EventType", "Process"))
+                if (orders != null)
                 {
-                    logger.LogInformation("開始處理...");
-                    // 假設你的處理過程在這裡
-                    batchService.Process(orders);
-                    logger.LogInformation("處理完成。");
+                    //using (LogContext.PushProperty("EventType", "Input"))
+                    //{
+                    //    logger.LogInformation($"Total orders: {orders.Count}");
+
+                    //    // 透過迴圈，讓每一筆 Orders 都成為獨立的日誌記錄
+                    //    foreach (OrdersView order in orders)
+                    //    {
+                    //        logger.LogInformation($"{order}");
+                    //    }
+                    //}
+
+                    // 在這個區塊內，所有日誌都會帶有 EventType = Process 的屬性
+                    using (LogContext.PushProperty("EventType", "Process"))
+                    {
+                        logger.LogInformation("開始處理...");
+                        // 假設你的處理過程在這裡
+                        batchService.Process(orders);
+                        logger.LogInformation("處理完成。");
+                    }
                 }
             }
 

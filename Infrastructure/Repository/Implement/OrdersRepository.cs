@@ -44,14 +44,25 @@ namespace Infrastructure.Repository.Implement
             return connection.Query<OrdersView>(sql, new { customerTypes }, transaction).ToList();
         }
 
+        //public List<string> GetDuplicateOrderIds(List<string> idsToSearch)
+        //{
+        //    string sql = $@"SELECT 
+        //                    IDNumber
+        //                    From {DbTableName.Orders}                            
+        //                    WHERE IDnumber IN @Ids                            
+        //                    GROUP BY IDNumber 
+        //                    HAVING COUNT(IDNumber) > 1";
+
+        //    return connection.Query<string>(sql, new { Ids = idsToSearch }, transaction).ToList();
+        //}
+
+        /// <inheritdoc/>
         public List<string> GetDuplicateOrderIds(List<string> idsToSearch)
         {
             string sql = $@"SELECT 
                             IDNumber
                             From {DbTableName.Orders}                            
-                            WHERE IDnumber IN @Ids                            
-                            GROUP BY IDNumber 
-                            HAVING COUNT(IDNumber) > 1";
+                            WHERE IDnumber IN @Ids";
                 
             return connection.Query<string>(sql, new { Ids = idsToSearch }, transaction).ToList();
         }

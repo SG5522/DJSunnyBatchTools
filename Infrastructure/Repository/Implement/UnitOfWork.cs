@@ -25,7 +25,8 @@ namespace Infrastructure.Repository.Implement
         private readonly IOldIdentifycardRepository oldIdentifycardRepository;
         private readonly IOldPhotoRepository oldPhotoRepository;
         private readonly IOrdersRepository ordersRepository;
-        private readonly IPhotoRepository photoRepository;               
+        private readonly IPhotoRepository photoRepository;
+        private readonly IMainCaseRepository mainCaseRepository;
 
         /// <summary>
         /// 建置
@@ -45,6 +46,7 @@ namespace Infrastructure.Repository.Implement
             oldPhotoRepository = new OldPhotoRepository(connection, transaction);
             ordersRepository = new OrdersRepository(connection, transaction);
             photoRepository = new PhotoRepository(connection, transaction);
+            mainCaseRepository = new MainCaseRepository(connection, transaction);
             this.logger = logger;
         }
 
@@ -68,6 +70,8 @@ namespace Infrastructure.Repository.Implement
 
         /// <inheritdoc/>
         public IPhotoRepository PhotoRepository => photoRepository;
+
+        public IMainCaseRepository MainCaseRepository => mainCaseRepository;
 
 
         /// <inheritdoc/>

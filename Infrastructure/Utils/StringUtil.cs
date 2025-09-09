@@ -7,6 +7,6 @@
         /// </summary>
         /// <returns></returns>
         public static string GetRandomSN()
-            => DateTime.Now.ToString("yyyyMMddfffffff").ToString();
+            => DateTime.Now.ToString("yyyyMMddfffffff").ToString();        
     }
 }

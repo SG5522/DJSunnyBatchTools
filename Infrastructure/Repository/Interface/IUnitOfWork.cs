@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Repository.Interface
+﻿using Infrastructure.Repository.Implement;
+
+namespace Infrastructure.Repository.Interface
 {
     /// <summary>
     /// 定義工作單元 (Unit of Work) 的介面。
@@ -49,6 +51,11 @@
         /// 負責處理 Photo 實體的資料庫操作。
         /// </summary>
         IPhotoRepository PhotoRepository { get; }
+
+        /// <summary>
+        /// 取的MainCase(主表)的資料
+        /// </summary>
+        IMainCaseRepository MainCaseRepository { get; }
 
         /// <summary>
         /// 提交所有在這個工作單元中累積的資料庫變更。

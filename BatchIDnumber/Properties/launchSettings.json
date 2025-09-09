@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "YourProjectName": {
+    "BatchIDnumber": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"

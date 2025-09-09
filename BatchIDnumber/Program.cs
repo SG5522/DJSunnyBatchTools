@@ -38,7 +38,7 @@ var builder = Host.CreateDefaultBuilder(args).ConfigureLogging(loggingBuilder =>
                                     formatter : jsonFormatter)); // 將篩選過的日誌寫入檔案);
 
         loggerConfiguration.WriteTo.Logger(lc => 
-                lc.Filter.ByExcluding("EventType = 'Input'") // 在程式碼中直接使用篩選
+                lc.Filter.ByExcluding("EventType = 'Process'") // 在程式碼中直接使用篩選
                          .WriteTo.File(
                                     path: processingResults,
                                     retainedFileCountLimit: 10, // 只保留最近 10 個檔案
