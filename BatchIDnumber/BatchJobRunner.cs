@@ -34,31 +34,16 @@ namespace BatchIDnumber
                 //{
                 //    order.RandomCustomerType();
                 //}
-                //JsonFileUtil.WriteToJsonFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "Report/input.json"));
-                //CsvFileUtil.WriteToCsvFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "Report/input.csv"));
-                List<OrdersView>? orders = CsvFileUtil.ReadFromCsvFile<OrdersView>(Path.Combine(Directory.GetCurrentDirectory(), "Report/input.csv"));
+                //JsonFileUtil.WriteToJsonFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "input/acclist.json"));
+                //CsvFileUtil.WriteToCsvFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "input/acclist.csv"));
+                List<OrdersView>? orders = CsvFileUtil.ReadFromCsvFile<OrdersView>(Path.Combine(Directory.GetCurrentDirectory(), "input/acclist.csv"));
 
                 if (orders != null)
                 {
-                    //using (LogContext.PushProperty("EventType", "Input"))
-                    //{
-                    //    logger.LogInformation($"Total orders: {orders.Count}");
-
-                    //    // 透過迴圈，讓每一筆 Orders 都成為獨立的日誌記錄
-                    //    foreach (OrdersView order in orders)
-                    //    {
-                    //        logger.LogInformation($"{order}");
-                    //    }
-                    //}
-
-                    // 在這個區塊內，所有日誌都會帶有 EventType = Process 的屬性
-                    using (LogContext.PushProperty("EventType", "Process"))
-                    {
-                        logger.LogInformation("開始處理...");
-                        // 假設你的處理過程在這裡
-                        batchService.Process(orders);
-                        logger.LogInformation("處理完成。");
-                    }
+                    logger.LogInformation("開始處理...");                    
+                    batchService.Process(orders);
+                    logger.LogInformation("處理完成。");
+                    
                 }
             }
 

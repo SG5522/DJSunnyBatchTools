@@ -38,8 +38,7 @@ namespace BatchIDnumber.Service.Implement
         public void Process(List<OrdersView> ordersViewList)
         {
             try
-            {
-                logger.LogInformation("============開始批次處理===========");
+            {                
                 MarkOrderSingularity(ordersViewList);
                 List<ReportViewModel> reports = new();
                 
@@ -73,7 +72,6 @@ namespace BatchIDnumber.Service.Implement
         /// <param name="ordersView"></param>
         private ReportViewModel ProcessSingleOrders(OrdersView ordersView)
         {
-
             ReportViewModel report = new()
             {
                 AccNo = ordersView.AccNo,
@@ -109,14 +107,14 @@ namespace BatchIDnumber.Service.Implement
 
                 currentAction = "OldIdentifycardRepository.UpdateIDNumber";
                 unitOfWork.OldIdentifycardRepository.UpdateIDNumber(report);
-                
+
                 report.Result = IDNumberChangeResult.Success;
                 SetReportAccName(report);
             }
             catch (Exception ex)
             {                
                 logger.LogError("帳號：{@AccNo} 處理失敗，在動作 {Action} 時發生錯誤 {@ErrorMessage} ", ordersView.AccNo, currentAction, ex.Message);
-            }                     
+            }
             
             return report;
         }
@@ -132,6 +130,7 @@ namespace BatchIDnumber.Service.Implement
             {
                 AccNo = ordersView.AccNo,
                 IDNumber = ordersView.IDNumber,
+                CustomerType = ordersView.CustomerType,
                 NewIDNumber = $"{ordersView.IDNumber}{"~"}{idNumberCount}",                
             };
 
@@ -162,7 +161,7 @@ namespace BatchIDnumber.Service.Implement
 
                 currentAction = "OldIdentifycardRepository.Inserts";
                 unitOfWork.OldIdentifycardRepository.Inserts(oldIdentifycards, report.NewIDNumber);
-                
+
                 report.Result = IDNumberChangeResult.Success;
                 SetReportAccName(report);
             }
