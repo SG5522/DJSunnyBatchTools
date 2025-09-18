@@ -7,6 +7,6 @@
         /// </summary>
         /// <param name="accNo"></param>
         /// <returns></returns>
-        string? GetAccName(string accNo);
+        Task<string?> GetAccName(string accNo);
     }
 }

@@ -4,6 +4,7 @@ using DBEntities.Entities;
 using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Repository.Implement
 {
@@ -25,7 +26,7 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public int Insert(Customerdata customerdata)
+        public async Task<int> Insert(Customerdata customerdata)
         {
             string sql = $@"INSERT into {DbTableName.CustomerData}
                         (Idnumber, Name, Sex, Birthday, Bplace,
@@ -46,11 +47,11 @@ namespace Infrastructure.Repository.Implement
                         @IsTempId,
                         @CustomerType)";
 
-            return connection.Execute(sql, customerdata, transaction);       
+            return await connection.ExecuteAsync(sql, customerdata, transaction);       
         }
 
         /// <inheritdoc/>
-        public int CopyWithNewId(CopyParam copyParam)
+        public async Task<int> CopyWithNewId(CopyParam copyParam)
         {    
             string sql = $@"INSERT into {DbTableName.CustomerData}
                         (Idnumber, Name, Sex, Birthday, Bplace,
@@ -69,21 +70,20 @@ namespace Infrastructure.Repository.Implement
                             oldCust.MobilePhone,
                             oldCust.Email,
                             oldCust.OccupationCode,                            
-                            oldCust.CustomerType
+                            @NewCustomerType As CustomerType
                         FROM Customerdata AS oldCust
                         WHERE oldCust.IDnumber = @IDNumber";
 
-            return connection.Execute(sql, copyParam, transaction);
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
         }
 
         /// <inheritdoc/>
-        public int Delete(string idNumber)
+        public async Task<int> Delete(string idNumber)
         {
             string sql = $@"Delete FROM {DbTableName.CustomerData}
                         WHERE IDnumber = @IDNumber";
 
-            return connection.Execute(sql, new { IDNumber = idNumber }, transaction);
-
+            return await connection.ExecuteAsync(sql, new { IDNumber = idNumber }, transaction);
         }
     }
 }

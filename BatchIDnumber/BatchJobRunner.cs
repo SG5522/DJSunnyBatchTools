@@ -41,9 +41,8 @@ namespace BatchIDnumber
                 if (orders != null)
                 {
                     logger.LogInformation("開始處理...");                    
-                    batchService.Process(orders);
-                    logger.LogInformation("處理完成。");
-                    
+                    await batchService.Process(orders);
+                    logger.LogInformation("處理完成。");                    
                 }
             }
 

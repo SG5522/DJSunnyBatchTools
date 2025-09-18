@@ -21,14 +21,14 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public string? GetAccName(string accNo)
+        public async Task<string?> GetAccName(string accNo)
         {
             string sql = $@"SELECT 
                             AccName
                             From {DbTableName.Maincase}                            
                             WHERE AccNo = @AccNo";
 
-            return connection.QueryFirstOrDefault<string>(sql, new { AccNo = accNo }, transaction);
+            return await connection.QueryFirstOrDefaultAsync<string>(sql, new { AccNo = accNo }, transaction);
         }
 
     }

@@ -1,5 +1,4 @@
-﻿
-
+﻿using DBEntities.Const;
 using System.ComponentModel.DataAnnotations;
 
 namespace Infrastructure.Models
@@ -20,6 +19,12 @@ namespace Infrastructure.Models
         /// </summary>
         [Display(Order = 2)]
         public string IDNumber { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 身份別
+        /// </summary>
+        [Display(Order = 4)]
+        public CustomerType NewCustomerType { get; set; }
 
         /// <summary>
         /// 變更後的統編

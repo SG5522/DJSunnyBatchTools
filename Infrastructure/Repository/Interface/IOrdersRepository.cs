@@ -9,27 +9,27 @@ namespace Infrastructure.Repository.Interface
         /// </summary>
         /// <param name="customerTypes"></param>
         /// <returns></returns>
-        List<OrdersView> GetOrders(List<string> customerTypes);
+        Task<List<OrdersView>> GetOrders(List<string> customerTypes);
 
         /// <summary>
         /// 從資料庫中找出在給定清單裡有重複紀錄的 IDNumber。
         /// </summary>
         /// <param name="idsToSearch">需要查詢的 IDNumber 清單。</param>
         /// <returns>重複的 IDNumber 清單。</returns>
-        List<string> GetDuplicateOrderIds(List<string> idsToSearch);
+        Task<List<string>> GetDuplicateOrderIds(List<string> idsToSearch);
 
         /// <summary>
         /// 新增
         /// </summary>
         /// <param name="copyParam"></param>
         /// <returns></returns>
-        int InsertNewIDNumber(CopyParam copyParam);
+        Task<int> InsertNewIDNumber(CopyParam copyParam);
 
         /// <summary>
         /// 修改
         /// </summary>
         /// <param name="copyParam"></param>
         /// <returns></returns>
-        int Update(CopyParam copyParam);
+        Task<int> Update(CopyParam copyParam);
     }
 }

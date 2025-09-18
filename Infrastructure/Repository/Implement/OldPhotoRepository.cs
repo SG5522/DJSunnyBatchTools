@@ -21,16 +21,16 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public List<OldPhoto> GetOldPhotos(string idNumber)
+        public async Task<List<OldPhoto>> GetOldPhotos(string idNumber)
         {
             string sql = $@"SELECT * FROM {DbTableName.OldPhoto}
                             WHERE IDnumber = @idNumber";
 
-            return connection.Query<OldPhoto>(sql, new { idNumber }, transaction).ToList();
+            return (await connection.QueryAsync<OldPhoto>(sql, new { idNumber }, transaction)).ToList();
         }
 
         /// <inheritdoc/>
-        public int Inserts(List<OldPhoto> oldPhotos, string idNumber)
+        public async Task<int> Inserts(List<OldPhoto> oldPhotos, string idNumber)
         {
             int result = default;
               
@@ -38,29 +38,29 @@ namespace Infrastructure.Repository.Implement
             {
                 oldPhoto.Sn = StringUtil.GetRandomSN();
                 oldPhoto.Idnumber = idNumber;
-                result += Insert(oldPhoto);
+                result += await Insert(oldPhoto);
             }
-            //logger.LogInformation("IDnumber {@idNumber} 身份證歷史紀錄加入 :{@insertConut} 筆", idNumber, insertConut); 靠service層紀錄
+            
             return result;
         }
 
         /// <inheritdoc/>
-        public int Insert(OldPhoto oldPhoto)
+        public async Task<int> Insert(OldPhoto oldPhoto)
         {
             string sql = $@"INSERT into {DbTableName.OldPhoto} (IDnumber, ImagePath, featureJson, [DateTime], SN) 
                             VALUES (@IDnumber, @ImagePath, @FeatureJson, @DateTime, @Sn)";
 
-            return connection.Execute(sql, oldPhoto, transaction);
+            return await connection.ExecuteAsync(sql, oldPhoto, transaction);
         }
 
         /// <inheritdoc/>
-        public int UpdateIDNumber(CopyParam copyParam)
+        public async Task<int> UpdateIDNumber(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.OldPhoto} 
                             Set IDnumber = @NewIDNumber 
                             WHERE IDnumber = @IDNumber ";
 
-            return connection.Execute(sql, copyParam, transaction);
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
         }
     }
 }

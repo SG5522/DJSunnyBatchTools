@@ -4,6 +4,7 @@ using DBEntities.Entities;
 using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Repository.Implement
 {
@@ -24,16 +25,16 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public int Insert(IdentifyCard identifycard)
+        public async Task<int> Insert(IdentifyCard identifycard)
         {
             string sql = $@"INSERT into {DbTableName.IdentifyCard} (IDnumber, IMAGEFPATH, [Order], [DateTime], housebook) 
                             VALUES (@IDnumber, @Imagefpath, @Order, @DateTime, @Housebook)";
 
-            return connection.Execute(sql, identifycard, transaction);            
+            return await connection.ExecuteAsync(sql, identifycard, transaction);            
         }
 
         /// <inheritdoc/>
-        public int InsertCopy(CopyParam copyParam)
+        public async Task<int> InsertCopy(CopyParam copyParam)
         {
             string sql = $@"INSERT into {DbTableName.IdentifyCard} (IDnumber, IMAGEFPATH, [Order], [DateTime], housebook) 
                             SELECT 
@@ -45,17 +46,17 @@ namespace Infrastructure.Repository.Implement
                             FROM {DbTableName.IdentifyCard} AS old
                             WHERE IDNumber = @IDNumber ";
 
-            return connection.Execute(sql, copyParam, transaction);
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
         }
 
         /// <inheritdoc/>
-        public int UpdateIDNumber(CopyParam copyParam)
+        public async Task<int> UpdateIDNumber(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.IdentifyCard} 
                             Set IDnumber = @NewIDNumber 
                             WHERE IDnumber = @IDNumber ";
 
-            return connection.Execute(sql, copyParam, transaction);            
+            return await connection.ExecuteAsync(sql, copyParam, transaction);            
         }
     }
 }

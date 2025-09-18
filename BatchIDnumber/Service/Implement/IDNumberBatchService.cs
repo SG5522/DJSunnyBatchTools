@@ -26,25 +26,25 @@ namespace BatchIDnumber.Service.Implement
             this.logger = logger;
         }
 
-        public List<OrdersView> GetOrders(List<string> customerTypes)
+        public async Task<List<OrdersView>> GetOrders(List<string> customerTypes)
         {
-            return unitOfWork.OrdersRepository.GetOrders(customerTypes);
+            return await unitOfWork.OrdersRepository.GetOrders(customerTypes);
         }
 
         /// <summary>
         /// 批次處理
         /// </summary>
         /// <param name="ordersViewList"></param>
-        public void Process(List<OrdersView> ordersViewList)
+        public async Task Process(List<OrdersView> ordersViewList)
         {
             try
             {                
-                MarkOrderSingularity(ordersViewList);
+                await MarkOrderSingularity(ordersViewList);
                 List<ReportViewModel> reports = new();
                 
                 foreach (OrdersView ordersView in ordersViewList.Where(o => o.IsSingle))
                 {
-                    reports.Add(ProcessSingleOrders(ordersView));
+                    reports.Add(await ProcessSingleOrders(ordersView));
                 }
 
                 foreach (IGrouping<string, OrdersView> group in ordersViewList.Where(o => !o.IsSingle).GroupBy(o => o.IDNumber))
@@ -52,7 +52,7 @@ namespace BatchIDnumber.Service.Implement
                     int idnumberCount = 1;
                     foreach (OrdersView order in group)
                     {
-                        reports.Add(ProcessDuplicateOrder(order, ++idnumberCount));
+                        reports.Add(await ProcessDuplicateOrder(order, ++idnumberCount));
                     }
                 }
 
@@ -70,13 +70,13 @@ namespace BatchIDnumber.Service.Implement
         /// Orders的IDNumber只有一筆帳號時所做的批次處理
         /// </summary>
         /// <param name="ordersView"></param>
-        private ReportViewModel ProcessSingleOrders(OrdersView ordersView)
+        private async Task<ReportViewModel> ProcessSingleOrders(OrdersView ordersView)
         {
             ReportViewModel report = new()
             {
                 AccNo = ordersView.AccNo,
                 IDNumber = ordersView.IDNumber,
-                CustomerType = ordersView.CustomerType,
+                NewCustomerType = ordersView.CustomerType,
                 NewIDNumber = $"{ordersView.IDNumber}{"~1"}"
             };
 
@@ -85,31 +85,31 @@ namespace BatchIDnumber.Service.Implement
             try
             {
                 currentAction = "CustomerDataRepository.CopyWithNewId";
-                unitOfWork.CustomerDataRepository.CopyWithNewId(report);
+                await unitOfWork.CustomerDataRepository.CopyWithNewId(report);
 
                 currentAction = "CustomerDataRepository.Delete";
-                unitOfWork.CustomerDataRepository.Delete(report.IDNumber);
+                await unitOfWork.CustomerDataRepository.Delete(report.IDNumber);
 
                 currentAction = "OrdersRepository.Update";
-                unitOfWork.OrdersRepository.Update(report);
+                await unitOfWork.OrdersRepository.Update(report);
 
                 currentAction = "CombinidRepository.Update";
-                unitOfWork.CombinidRepository.Update(report);
+                await unitOfWork.CombinidRepository.Update(report);
 
                 currentAction = "PhotoRepository.UpdateIDNumber";
-                unitOfWork.PhotoRepository.UpdateIDNumber(report);
+                await unitOfWork.PhotoRepository.UpdateIDNumber(report);
 
                 currentAction = "IdentifycardRepository.UpdateIDNumber";
-                unitOfWork.IdentifycardRepository.UpdateIDNumber(report);
+                await unitOfWork.IdentifycardRepository.UpdateIDNumber(report);
 
                 currentAction = "OldPhotoRepository.UpdateIDNumber";
-                unitOfWork.OldPhotoRepository.UpdateIDNumber(report);
+                await unitOfWork.OldPhotoRepository.UpdateIDNumber(report);
 
                 currentAction = "OldIdentifycardRepository.UpdateIDNumber";
-                unitOfWork.OldIdentifycardRepository.UpdateIDNumber(report);
+                await unitOfWork.OldIdentifycardRepository.UpdateIDNumber(report);
 
                 report.Result = IDNumberChangeResult.Success;
-                SetReportAccName(report);
+                await SetReportAccName(report);
             }
             catch (Exception ex)
             {                
@@ -124,13 +124,13 @@ namespace BatchIDnumber.Service.Implement
         /// </summary>
         /// <param name="ordersView"></param>
         /// <param name="idNumberCount"></param>
-        private ReportViewModel ProcessDuplicateOrder(OrdersView ordersView, int idNumberCount)
+        private async Task<ReportViewModel> ProcessDuplicateOrder(OrdersView ordersView, int idNumberCount)
         {
             ReportViewModel report = new()
             {
                 AccNo = ordersView.AccNo,
                 IDNumber = ordersView.IDNumber,
-                CustomerType = ordersView.CustomerType,
+                NewCustomerType = ordersView.CustomerType,
                 NewIDNumber = $"{ordersView.IDNumber}{"~"}{idNumberCount}",                
             };
 
@@ -138,32 +138,32 @@ namespace BatchIDnumber.Service.Implement
 
             try
             {
-                List<OldPhoto> oldPhotos = unitOfWork.OldPhotoRepository.GetOldPhotos(report.IDNumber);
-                List<OldIdentifycard> oldIdentifycards = unitOfWork.OldIdentifycardRepository.GetOldIdentifycards(report.IDNumber);
+                List<OldPhoto> oldPhotos = await unitOfWork.OldPhotoRepository.GetOldPhotos(report.IDNumber);
+                List<OldIdentifycard> oldIdentifycards = await unitOfWork.OldIdentifycardRepository.GetOldIdentifycards(report.IDNumber);
 
                 currentAction = "CustomerDataRepository.CopyWithNewId";
-                unitOfWork.CustomerDataRepository.CopyWithNewId(report);
+                await unitOfWork.CustomerDataRepository.CopyWithNewId(report);
 
                 currentAction = "OrdersRepository.InsertNewIDNumber";
-                unitOfWork.OrdersRepository.InsertNewIDNumber(report);
+                await unitOfWork.OrdersRepository.InsertNewIDNumber(report);
 
                 currentAction = "CombinidRepository.InsertCopy";
-                unitOfWork.CombinidRepository.InsertCopy(report);
+                await unitOfWork.CombinidRepository.InsertCopy(report);
 
                 currentAction = "PhotoRepository.InsertCopy";
-                unitOfWork.PhotoRepository.InsertCopy(report);
+                await unitOfWork.PhotoRepository.InsertCopy(report);
 
                 currentAction = "IdentifycardRepository.InsertCopy";
-                unitOfWork.IdentifycardRepository.InsertCopy(report);
+                await unitOfWork.IdentifycardRepository.InsertCopy(report);
 
                 currentAction = "OldPhotoRepository.Inserts";
-                unitOfWork.OldPhotoRepository.Inserts(oldPhotos, report.NewIDNumber);
+                await unitOfWork.OldPhotoRepository.Inserts(oldPhotos, report.NewIDNumber);
 
                 currentAction = "OldIdentifycardRepository.Inserts";
-                unitOfWork.OldIdentifycardRepository.Inserts(oldIdentifycards, report.NewIDNumber);
+                await unitOfWork.OldIdentifycardRepository.Inserts(oldIdentifycards, report.NewIDNumber);
 
                 report.Result = IDNumberChangeResult.Success;
-                SetReportAccName(report);
+                await SetReportAccName(report);
             }
             catch (Exception ex)
             {
@@ -177,11 +177,11 @@ namespace BatchIDnumber.Service.Implement
         /// 處理Orders清單，並標記其中的重複項目。
         /// </summary>
         /// <param name="partialOrders">需要處理的訂單清單。</param>
-        private void MarkOrderSingularity(List<OrdersView> partialOrders)
+        private async Task MarkOrderSingularity(List<OrdersView> partialOrders)
         {
             List<string> uniqueIds = partialOrders.Select(o => o.IDNumber).Distinct().ToList();
 
-            List<string> duplicateIds = unitOfWork.OrdersRepository.GetDuplicateOrderIds(uniqueIds);
+            List<string> duplicateIds = await unitOfWork.OrdersRepository.GetDuplicateOrderIds(uniqueIds);
 
             HashSet<string> duplicateIdsSet = new(duplicateIds);
 
@@ -191,8 +191,8 @@ namespace BatchIDnumber.Service.Implement
             }
         }
 
-        private void SetReportAccName(ReportViewModel report)
-           => report.AccName = unitOfWork.MainCaseRepository.GetAccName(report.AccNo) ?? "主表找不到資料";
+        private async Task SetReportAccName(ReportViewModel report)
+           => report.AccName = await unitOfWork.MainCaseRepository.GetAccName(report.AccNo) ?? "主表找不到資料";
         
 
         /// <summary>

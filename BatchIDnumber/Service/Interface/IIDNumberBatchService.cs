@@ -6,8 +6,8 @@ namespace BatchIDnumber.Service.Interface
 {
     public interface IIDNumberBatchService
     {
-        List<OrdersView> GetOrders(List<string> customerTypes);
+        Task<List<OrdersView>> GetOrders(List<string> customerTypes);
 
-        void Process(List<OrdersView> ordersViews);
+        Task Process(List<OrdersView> ordersViews);
     }
 }

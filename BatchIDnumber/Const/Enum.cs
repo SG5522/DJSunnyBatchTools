@@ -14,6 +14,12 @@ namespace BatchIDnumber.Const
         /// 失敗
         /// </summary>
         [Description("失敗")]
-        Failure = 1
+        Failure = 1,
+
+        /// <summary>
+        /// 偵測為統編，不需處理
+        /// </summary>
+        [Description("偵測為統編，不需處理")]
+        UnifiedBusinessNumber = 2
     }
 }

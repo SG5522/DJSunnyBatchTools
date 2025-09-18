@@ -26,46 +26,45 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public List<OldIdentifycard> GetOldIdentifycards(string idNumber)
+        public async Task<List<OldIdentifycard>> GetOldIdentifycards(string idNumber)
         {
             string sql = $@"SELECT * FROM {DbTableName.Oldidentifycard}
                             WHERE IDnumber = @idNumber";
 
-            return connection.Query<OldIdentifycard>(sql, new { idNumber }, transaction).ToList();
+            return (await connection.QueryAsync<OldIdentifycard>(sql, new { idNumber }, transaction)).ToList();
         }
 
         /// <inheritdoc/>
-        public int Inserts(List<OldIdentifycard> oldIdentifycards, string newIDNumber)
+        public async Task<int> Inserts(List<OldIdentifycard> oldIdentifycards, string newIDNumber)
         {            
             int result = 0;
             foreach (OldIdentifycard oldIdentifycard in oldIdentifycards)
             {
                 oldIdentifycard.Sn = StringUtil.GetRandomSN();
                 oldIdentifycard.Idnumber = newIDNumber;
-                result += Insert(oldIdentifycard);
-            }
-            //logger.LogInformation("IDnumber {@idNumber} 身份證歷史紀錄加入 :{@insertConut} 筆", idNumber, insertConut); 靠serveice層紀錄
+                result += await Insert(oldIdentifycard);
+            }            
             return result;                
         }
 
         /// <inheritdoc/>
-        public int Insert(OldIdentifycard oldIdentifycard)
+        public async Task<int> Insert(OldIdentifycard oldIdentifycard)
         {
             string sql = $@"INSERT into {DbTableName.Oldidentifycard} (IDnumber, IMAGEFPATH, [Order], [DateTime], housebook, SN)
                             VALUES (@IDnumber, @Imagefpath, @Order, @DateTime, @Housebook, @Sn)";
             
-            return connection.Execute(sql, oldIdentifycard, transaction);
+            return await connection.ExecuteAsync(sql, oldIdentifycard, transaction);
         }
 
 
         /// <inheritdoc/>
-        public int UpdateIDNumber(CopyParam copyParam)
+        public async Task<int> UpdateIDNumber(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.Oldidentifycard} 
                             Set IDnumber = @NewIDNumber 
                             WHERE IDnumber = @IDNumber ";
 
-            return connection.Execute(sql, copyParam, transaction);
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
         }
     }
 }

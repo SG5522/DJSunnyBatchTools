@@ -18,24 +18,24 @@ namespace Infrastructure.Repository.Implement
             this.transaction = transaction;            
         }
 
-        public bool CheckPhoto (string idNumber)
+        public async Task<bool> CheckPhoto (string idNumber)
         {
             string sql = $@"SELECT 1 FROM {DbTableName.Photo} Where IDNumber = @IDNumber";
 
-            return connection.QueryFirstOrDefault<int>(sql, new { IDNumber = idNumber }, transaction) != 0;
+            return await connection.QueryFirstOrDefaultAsync<int>(sql, new { IDNumber = idNumber }, transaction) != 0;
         }
 
         /// <inheritdoc/>
-        public int Insert(Photo photo)
+        public async Task<int> Insert(Photo photo)
         {
             string sql = $@"INSERT into {DbTableName.Photo} (IDnumber, ImagePath, featureJson, [DateTime]) 
                             VALUES (@IDnumber, @ImagePath, @FeatureJson, @DateTime)";
 
-            return connection.Execute(sql, photo, transaction);            
+            return await connection.ExecuteAsync(sql, photo, transaction);            
         }
 
         /// <inheritdoc/>
-        public int InsertCopy(CopyParam copyParam)
+        public async Task<int> InsertCopy(CopyParam copyParam)
         {
             string sql = $@"INSERT into {DbTableName.Photo} (IDnumber, ImagePath, featureJson, [DateTime]) 
                             SELECT 
@@ -46,11 +46,11 @@ namespace Infrastructure.Repository.Implement
                             FROM {DbTableName.Photo} AS old
                             WHERE IDNumber = @IDNumber";
 
-            return connection.Execute(sql, copyParam, transaction);
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
         }
 
         /// <inheritdoc/>
-        public int Update(Photo photo)
+        public async Task<int> Update(Photo photo)
         {            
             string sql = $@"Update {DbTableName.Photo} 
                             Set ImagePath = @ImagePath,
@@ -58,14 +58,14 @@ namespace Infrastructure.Repository.Implement
                                 [DateTime] = @DateTime
                             WHERE IDnumber = @IDNumber";
 
-            return connection.Execute(sql, photo, transaction);
+            return await connection.ExecuteAsync(sql, photo, transaction);
         }
 
         /// <inheritdoc/>
-        public int UpdateIDNumber(CopyParam copyParam)
+        public async Task<int> UpdateIDNumber(CopyParam copyParam)
         {
-            int insertCount = InsertCopy(copyParam);
-            int deleteCount = Delete(copyParam.IDNumber);
+            int insertCount = await InsertCopy(copyParam);
+            int deleteCount = await Delete(copyParam.IDNumber);
 
             return insertCount + deleteCount;
         }        
@@ -75,12 +75,12 @@ namespace Infrastructure.Repository.Implement
         /// </summary>
         /// <param name="idNumber"></param>
         /// <returns></returns>
-        private int Delete (string idNumber)
+        private async Task<int> Delete (string idNumber)
         {
             string sql = $@"DELETE FROM {DbTableName.Photo} 
                             WHERE IDnumber = @IDNumber";
 
-            return connection.Execute(sql, new { IDNumber = idNumber }, transaction);            
+            return await connection.ExecuteAsync(sql, new { IDNumber = idNumber }, transaction);            
         }
     }
 }

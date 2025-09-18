@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using DBEntities.Const;
-using DBEntities.Entities;
 using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using System.Data;
@@ -24,37 +23,36 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
-        public int InsertNewIDNumber(CopyParam copyParam)
+        public async Task<int> InsertNewIDNumber(CopyParam copyParam)
         {
             string sql = $@"INSERT into {DbTableName.Combinid} (AccNo, IDnumber, BranchId) VALUES (@AccNo, @NewIDNumber, @BranchId)";
-            return connection.Execute(sql, copyParam, transaction);
-            //logger.LogInformation($"新增 Combinid 筆數為： {insertCount} "); 之後加到服務中            
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
         }
 
         /// <inheritdoc/>
-        public int InsertCopy(CopyParam copyParam)
+        public async Task<int> InsertCopy(CopyParam copyParam)
         {
             string sql = $@"INSERT into {DbTableName.Combinid} (AccNo, IDnumber, BranchId) 
                             SELECT 
-                            oldCombinid.AccNo,
-                            @NewIdnumber AS IDnumber,
-                            oldCombinid.BranchId
-                        FROM {DbTableName.Combinid} AS oldCombinid
-                        WHERE oldCombinid.AccNo = @AccNo
-                        AND oldCombinid.IDnumber = @IDNumber";                        
-            return connection.Execute(sql, copyParam, transaction);                    
+                            oldCombinid.AccNo, 
+                            @NewIdnumber AS IDnumber, 
+                            oldCombinid.BranchId 
+                        FROM {DbTableName.Combinid} AS oldCombinid 
+                        WHERE oldCombinid.AccNo = @AccNo 
+                        AND oldCombinid.IDnumber = @IDNumber ";                        
+            return await connection.ExecuteAsync(sql, copyParam, transaction);                    
         }
 
 
         /// <inheritdoc/>
-        public int Update(CopyParam copyParam)
+        public async Task<int> Update(CopyParam copyParam)
         {
             string sql = $@"Update {DbTableName.Combinid} 
-                            Set Idnumber = '@NewIDNumber'
-                            Where Accno = '@AccNo'
-                            AND IDnumber = '@IDNumber'";
+                            Set Idnumber = @NewIDNumber 
+                            Where Accno = @AccNo 
+                            AND IDnumber = @IDNumber ";
 
-            return connection.Execute(sql, copyParam, transaction);                         
+            return await connection.ExecuteAsync(sql, copyParam, transaction);                         
         }
     }
 }

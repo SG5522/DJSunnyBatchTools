@@ -1,5 +1,4 @@
-﻿using DBEntities.Entities;
-using Infrastructure.Models;
+﻿using Infrastructure.Models;
 
 namespace Infrastructure.Repository.Interface
 {
@@ -10,19 +9,19 @@ namespace Infrastructure.Repository.Interface
         /// </summary>
         /// <param name="copyParam"></param>
         /// <returns></returns>
-        int InsertNewIDNumber(CopyParam copyParam);
+        Task<int> InsertNewIDNumber(CopyParam copyParam);
 
         /// <summary>
         /// 複製
         /// </summary>
         /// <param name="copyParam"></param>
-        int InsertCopy(CopyParam copyParam);
+        Task<int> InsertCopy(CopyParam copyParam);
 
         /// <summary>
         /// 修改
         /// </summary>
         /// <param name="copyParam"></param>
         /// <returns></returns>
-        public int Update(CopyParam copyParam);
+        Task<int> Update(CopyParam copyParam);
     }
 }
