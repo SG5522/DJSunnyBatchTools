@@ -1,4 +1,5 @@
 ﻿using BatchIDnumber;
+using BatchIDnumber.Const;
 using BatchIDnumber.Service.Implement;
 using BatchIDnumber.Service.Interface;
 using BatchIDnumber.Util;
@@ -26,6 +27,10 @@ var builder = Host.CreateDefaultBuilder(args).ConfigureLogging(loggingBuilder =>
     // 設定依賴注入服務
     .ConfigureServices((hostContext, services) =>
     {
+        //批次設定檔載入
+        services.Configure<BatchConfigOption>(
+            hostContext.Configuration.GetSection("BatchConfig"));
+
         // 註冊你的 UnitOfWork 服務
         services.AddScoped<IUnitOfWork>(sp =>
         {

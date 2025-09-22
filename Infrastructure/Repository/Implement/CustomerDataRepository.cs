@@ -78,10 +78,21 @@ namespace Infrastructure.Repository.Implement
         }
 
         /// <inheritdoc/>
+        public async Task<int> UpdateIDAndType(CopyParam copyParam)
+        {
+            string sql = $@"Update {DbTableName.CustomerData}
+                            Set IDnumber = @NewIDNumber,
+                                CustomerType = @NewCustomerType                            
+                            WHERE IDnumber = @IDNumber";
+
+            return await connection.ExecuteAsync(sql, copyParam, transaction);
+        }
+
+        /// <inheritdoc/>
         public async Task<int> Delete(string idNumber)
         {
             string sql = $@"Delete FROM {DbTableName.CustomerData}
-                        WHERE IDnumber = @IDNumber";
+                            WHERE IDnumber = @IDNumber";
 
             return await connection.ExecuteAsync(sql, new { IDNumber = idNumber }, transaction);
         }

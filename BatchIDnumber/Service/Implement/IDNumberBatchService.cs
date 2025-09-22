@@ -1,29 +1,34 @@
 ﻿using BatchIDnumber.Const;
 using BatchIDnumber.Models;
 using BatchIDnumber.Service.Interface;
+using CommonLib.Enums;
+using CommonLib.Utils;
 using DBEntities.Entities;
 using DJSpire.Models;
 using DJSpire.Utils;
 using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace BatchIDnumber.Service.Implement
 {
-    internal class IDNumberBatchService : IIDNumberBatchService
+    public class IDNumberBatchService : IIDNumberBatchService
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly ILogger<IDNumberBatchService> logger;
+        private BatchConfigOption batchConfigOption;
 
         /// <summary>
         /// 建置
         /// </summary>
         /// <param name="connectionString"></param>
         /// <param name="">logger</param>
-        public IDNumberBatchService(IUnitOfWork unitOfWork, ILogger<IDNumberBatchService> logger) 
+        public IDNumberBatchService(IUnitOfWork unitOfWork, ILogger<IDNumberBatchService> logger, IOptionsMonitor<BatchConfigOption> optionsMonitor)
         {
             this.unitOfWork = unitOfWork;
             this.logger = logger;
+            batchConfigOption = optionsMonitor.CurrentValue;
         }
 
         public async Task<List<OrdersView>> GetOrders(List<string> customerTypes)
@@ -38,7 +43,9 @@ namespace BatchIDnumber.Service.Implement
         public async Task Process(List<OrdersView> ordersViewList)
         {
             try
-            {                
+            {
+                //過濾掉統編為公司戶的清單
+                ordersViewList = ordersViewList.Where(x => TaiwanIdValidator.Validate(x.IDNumber).Type != IdType.UnifiedBusinessNumber).ToList();
                 await MarkOrderSingularity(ordersViewList);
                 List<ReportViewModel> reports = new();
                 
@@ -49,7 +56,7 @@ namespace BatchIDnumber.Service.Implement
 
                 foreach (IGrouping<string, OrdersView> group in ordersViewList.Where(o => !o.IsSingle).GroupBy(o => o.IDNumber))
                 {
-                    int idnumberCount = 1;
+                    int idnumberCount = 0;
                     foreach (OrdersView order in group)
                     {
                         reports.Add(await ProcessDuplicateOrder(order, ++idnumberCount));
@@ -84,8 +91,8 @@ namespace BatchIDnumber.Service.Implement
 
             try
             {
-                currentAction = "CustomerDataRepository.CopyWithNewId";
-                await unitOfWork.CustomerDataRepository.CopyWithNewId(report);
+                currentAction = "CustomerDataRepository.UpdateIDAndType";
+                await unitOfWork.CustomerDataRepository.UpdateIDAndType(report);
 
                 currentAction = "CustomerDataRepository.Delete";
                 await unitOfWork.CustomerDataRepository.Delete(report.IDNumber);
@@ -185,7 +192,7 @@ namespace BatchIDnumber.Service.Implement
 
             HashSet<string> duplicateIdsSet = new(duplicateIds);
 
-            foreach (var order in partialOrders)
+            foreach (OrdersView order in partialOrders)
             {
                 order.IsSingle = !duplicateIdsSet.Contains(order.IDNumber);
             }
@@ -210,8 +217,8 @@ namespace BatchIDnumber.Service.Implement
 
             try
             {
-                ExcelData<ReportViewModel> excelData = new(report, ExcelHearderConsts.BatchIDNumberChange);
-                string filePath = "C:\\Works\\DJSunnyBatchTools\\BatchIDnumber\\bin\\Debug\\net8.0\\logs\\test.xlsx";
+                ExcelData<ReportViewModel> excelData = new(report, ExcelHearderConsts.BatchIDNumberChange);                
+                string filePath = batchConfigOption.GetReportPath();
                 ExcelUtil.CreateFileToSavePath(excelData, filePath);
                 logger.LogInformation("Excel 報表已成功儲存至：{filePath}", filePath);
             }

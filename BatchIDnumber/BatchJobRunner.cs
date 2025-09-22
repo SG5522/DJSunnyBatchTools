@@ -1,11 +1,11 @@
-﻿using BatchIDnumber.Service.Interface;
+﻿using BatchIDnumber.Const;
+using BatchIDnumber.Service.Interface;
 using CommonLib.Utils;
-using DBEntities.Entities;
 using Infrastructure.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog.Context;
+using Microsoft.Extensions.Options;
 
 namespace BatchIDnumber
 {
@@ -13,11 +13,13 @@ namespace BatchIDnumber
     {
         private readonly IServiceProvider serviceProvider;
         private readonly ILogger<BatchJobRunner> logger;
+        private BatchConfigOption batchConfigOption;
 
-        public BatchJobRunner(IServiceProvider serviceProvider, ILogger<BatchJobRunner> logger)
+        public BatchJobRunner(IServiceProvider serviceProvider, ILogger<BatchJobRunner> logger, IOptionsMonitor<BatchConfigOption> optionsMonitor)
         {
             this.serviceProvider = serviceProvider;
             this.logger = logger;
+            batchConfigOption = optionsMonitor.CurrentValue;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -28,15 +30,9 @@ namespace BatchIDnumber
             using (IServiceScope scope = serviceProvider.CreateScope())
             {
                 var batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
-                //List<OrdersView> orders = batchService.GetOrders(new List<string> { "5", "6", "99" });
 
-                //foreach (var order in orders)
-                //{
-                //    order.RandomCustomerType();
-                //}
-                //JsonFileUtil.WriteToJsonFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "input/acclist.json"));
-                //CsvFileUtil.WriteToCsvFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "input/acclist.csv"));
-                List<OrdersView>? orders = CsvFileUtil.ReadFromCsvFile<OrdersView>(Path.Combine(Directory.GetCurrentDirectory(), "input/acclist.csv"));
+
+                List<OrdersView>? orders = CsvFileUtil.ReadFromCsvFile<OrdersView>(batchConfigOption.GetAccListPath());
 
                 if (orders != null)
                 {

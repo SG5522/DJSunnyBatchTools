@@ -20,6 +20,13 @@ namespace Infrastructure.Repository.Interface
         Task<int> CopyWithNewId(CopyParam customerDataParam);
 
         /// <summary>
+        /// 更新IDNumber與身份別
+        /// </summary>
+        /// <param name="copyParam"></param>
+        /// <returns></returns>
+        Task<int> UpdateIDAndType(CopyParam copyParam);
+
+        /// <summary>
         /// 依IDNumber 為依據刪除
         /// </summary>
         /// <param name="idNumber"></param>
