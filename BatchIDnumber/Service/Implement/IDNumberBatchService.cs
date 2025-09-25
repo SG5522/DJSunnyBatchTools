@@ -31,7 +31,7 @@ namespace BatchIDnumber.Service.Implement
             batchConfigOption = optionsMonitor.CurrentValue;
         }
 
-        public async Task<List<OrdersView>> GetOrders(List<string> customerTypes)
+        public async Task<List<AccountRecord>> GetOrders(List<string> customerTypes)
         {
             return await unitOfWork.OrdersRepository.GetOrders(customerTypes);
         }
@@ -39,13 +39,24 @@ namespace BatchIDnumber.Service.Implement
         /// <summary>
         /// 批次處理
         /// </summary>
-        /// <param name="ordersViewList"></param>
-        public async Task Process(List<OrdersView> ordersViewList)
+        /// <param name="accountRecords"></param>
+        public async Task Process(List<AccountRecord> accountRecords)
         {
             try
             {
                 //過濾掉統編為公司戶的清單
-                ordersViewList = ordersViewList.Where(x => TaiwanIdValidator.Validate(x.IDNumber).Type != IdType.UnifiedBusinessNumber).ToList();
+                accountRecords = accountRecords.Where(x => TaiwanIdValidator.Validate(x.IDNumber).Type != IdType.UnifiedBusinessNumber).ToList();
+
+                // 步驟 2: 將 List<AccountList> 轉換為 List<OrdersView>
+                List<OrdersView> ordersViewList = accountRecords.Select(acc => new OrdersView
+                {
+                    AccNo = acc.AccNo,
+                    IDNumber = acc.IDNumber,
+                    CustomerType = acc.CustomerType,
+                    IsSingle = false // 初始化 IsSingle 屬性
+                }).ToList();
+
+
                 await MarkOrderSingularity(ordersViewList);
                 List<ReportViewModel> reports = new();
                 
@@ -151,8 +162,8 @@ namespace BatchIDnumber.Service.Implement
                 currentAction = "CustomerDataRepository.CopyWithNewId";
                 await unitOfWork.CustomerDataRepository.CopyWithNewId(report);
 
-                currentAction = "OrdersRepository.InsertNewIDNumber";
-                await unitOfWork.OrdersRepository.InsertNewIDNumber(report);
+                currentAction = "OrdersRepository.Update";
+                await unitOfWork.OrdersRepository.Update(report);
 
                 currentAction = "CombinidRepository.InsertCopy";
                 await unitOfWork.CombinidRepository.InsertCopy(report);
@@ -185,17 +196,31 @@ namespace BatchIDnumber.Service.Implement
         /// </summary>
         /// <param name="partialOrders">需要處理的訂單清單。</param>
         private async Task MarkOrderSingularity(List<OrdersView> partialOrders)
-        {
+        {            
             List<string> uniqueIds = partialOrders.Select(o => o.IDNumber).Distinct().ToList();
 
-            List<string> duplicateIds = await unitOfWork.OrdersRepository.GetDuplicateOrderIds(uniqueIds);
+            //List<string> duplicateIds = await unitOfWork.OrdersRepository.GetDuplicateOrderIds(uniqueIds);
 
-            HashSet<string> duplicateIdsSet = new(duplicateIds);
+            HashSet<string> allDuplicateIds = new HashSet<string>();
+
+            // 將 uniqueIds 清單分批，每批 1000 個
+            int batchSize = 100;
+            foreach (var batch in uniqueIds.Chunk(batchSize))
+            {
+                // 針對每一批 ID 呼叫資料庫
+                List<string> duplicateIdsInBatch = await unitOfWork.OrdersRepository.GetDuplicateOrderIds(batch.ToList());
+
+                // 將結果加入總清單中
+                foreach (var id in duplicateIdsInBatch)
+                {
+                    allDuplicateIds.Add(id);
+                }
+            }
 
             foreach (OrdersView order in partialOrders)
             {
-                order.IsSingle = !duplicateIdsSet.Contains(order.IDNumber);
-            }
+                order.IsSingle = !allDuplicateIds.Contains(order.IDNumber);
+            }            
         }
 
         private async Task SetReportAccName(ReportViewModel report)

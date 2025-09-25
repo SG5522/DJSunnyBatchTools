@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 
 // 在啟動時呼叫 LogUtil 來清理舊日誌檔
-LogUtil.CleanOldLogs("logs/input/data-*.json", 10);
 LogUtil.CleanOldLogs("logs/results/results-*.json", 10);
 
 //建立主機 (Host)

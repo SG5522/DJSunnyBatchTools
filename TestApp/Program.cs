@@ -1,5 +1,6 @@
-﻿using BatchIDnumber.Service.Interface;
+﻿using BatchIDnumber.Const;
 using BatchIDnumber.Service.Implement;
+using BatchIDnumber.Service.Interface;
 using CommonLib.Utils;
 using Infrastructure.Models;
 using Infrastructure.Repository.Implement;
@@ -44,15 +45,16 @@ namespace TestApp
                 var batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
 
                 // 執行 RamdomCustomerType 類別中的邏輯
-                List<OrdersView> orders = await batchService.GetOrders(new List<string> { "5", "6", "99" });
+                List<AccountRecord> orders = await batchService.GetOrders(new List<string> { "5", "6", "99" });
 
                 foreach (var order in orders)
                 {
                     order.RandomCustomerType();
                 }
 
+
                 JsonFileUtil.WriteToJsonFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "test/acclist.json"));
-                CsvFileUtil.WriteToCsvFile(orders, Path.Combine(Directory.GetCurrentDirectory(), "test/acclist.csv"));
+                CsvFileUtil.WriteToCsvFile<AccountRecord, AccountRecordMap>(orders, Path.Combine(Directory.GetCurrentDirectory(), "test/acclist.csv"));
             }
 
             Console.WriteLine("隨機取得身分別資料已匯出");

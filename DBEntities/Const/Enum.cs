@@ -5,15 +5,7 @@ using System.ComponentModel;
 namespace DBEntities.Const
 {
     public enum CustomerType
-    {
-        /// <summary>空字串</summary>
-        [Description("空字串")]
-        Empty = -1,
-
-        /// <summary>0. 無</summary>
-        [Description("無")]
-        None = 0,
-            
+    {            
         /// <summary>1. 身分證</summary>
         [Description("身分證")]
         IDCardNumber = 1,
@@ -34,7 +26,7 @@ namespace DBEntities.Const
         [Description("籌備處")]
         Preparation = 5,
 
-        // <summary>6. 聯名戶</summary>
+        /// <summary>6. 聯名戶</summary>
         [Description("聯名戶")]
         JointName = 6,
 

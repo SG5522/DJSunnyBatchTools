@@ -11,13 +11,13 @@ namespace BatchIDnumber.Service.Interface
         /// </summary>
         /// <param name="customerTypes"></param>
         /// <returns></returns>
-        Task<List<OrdersView>> GetOrders(List<string> customerTypes);
+        Task<List<AccountRecord>> GetOrders(List<string> customerTypes);
 
         /// <summary>
         /// 變更籌備處、聯名戶的統編
         /// </summary>
         /// <param name="ordersViews"></param>
         /// <returns></returns>
-        Task Process(List<OrdersView> ordersViews);
+        Task Process(List<AccountRecord> ordersViews);
     }
 }

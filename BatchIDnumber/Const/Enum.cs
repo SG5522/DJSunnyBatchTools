@@ -22,4 +22,11 @@ namespace BatchIDnumber.Const
         [Description("偵測為統編，不需處理")]
         UnifiedBusinessNumber = 2
     }
+
+    public enum FileFormat
+    {
+        Unknown = 0,
+        CSV = 1,
+        Json = 2,
+    }
 }

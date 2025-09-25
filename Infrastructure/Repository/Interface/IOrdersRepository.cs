@@ -9,7 +9,7 @@ namespace Infrastructure.Repository.Interface
         /// </summary>
         /// <param name="customerTypes"></param>
         /// <returns></returns>
-        Task<List<OrdersView>> GetOrders(List<string> customerTypes);
+        Task<List<AccountRecord>> GetOrders(List<string> customerTypes);
 
         /// <summary>
         /// 從資料庫中找出在給定清單裡有重複紀錄的 IDNumber。

@@ -1,6 +1,7 @@
 ﻿using BatchIDnumber.Const;
 using BatchIDnumber.Service.Interface;
 using CommonLib.Utils;
+using DBEntities.Const;
 using Infrastructure.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,13 +32,30 @@ namespace BatchIDnumber
             {
                 var batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
 
+                List<AccountRecord>? accountLists = new();
 
-                List<OrdersView>? orders = CsvFileUtil.ReadFromCsvFile<OrdersView>(batchConfigOption.GetAccListPath());
-
-                if (orders != null)
+                switch (batchConfigOption.FileFormat)
                 {
-                    logger.LogInformation("開始處理...");                    
-                    await batchService.Process(orders);
+                    case FileFormat.CSV:
+                        accountLists = CsvFileUtil.ReadFromCsvFile<AccountRecord>(batchConfigOption.GetAccListPath());
+                        break;
+                    case FileFormat.Json:
+                        accountLists = JsonFileUtil.ReadFromJsonFile<AccountRecord>(batchConfigOption.GetAccListPath());
+                        break;
+                    default:
+                        accountLists = CsvFileUtil.ReadFromCsvFile<AccountRecord>(batchConfigOption.GetAccListPath());
+                        break;
+                }
+
+
+                if (accountLists != null)
+                {
+                    logger.LogInformation("開始處理...");
+                    //過濾帳號只留有籌備處與聯名戶的帳號
+                    accountLists = accountLists.Where(accno => accno.CustomerType == CustomerType.Preparation 
+                                                            || accno.CustomerType == CustomerType.JointName).ToList();
+
+                    await batchService.Process(accountLists);
                     logger.LogInformation("處理完成。");                    
                 }
             }

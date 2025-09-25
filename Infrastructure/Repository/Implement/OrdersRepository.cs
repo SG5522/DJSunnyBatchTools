@@ -22,7 +22,7 @@ namespace Infrastructure.Repository.Implement
             this.transaction = transaction;            
         }
 
-        public async Task<List<OrdersView>> GetOrders (List<string> customerTypes)
+        public async Task<List<AccountRecord>> GetOrders (List<string> customerTypes)
         {
             string sql = $@"SELECT 
                             o.Accno, 
@@ -39,7 +39,7 @@ namespace Infrastructure.Repository.Implement
                             ORDER BY o.IDNumber, 
                             m.createDate";
             
-            return (await connection.QueryAsync<OrdersView>(sql, new { customerTypes }, transaction)).ToList();
+            return (await connection.QueryAsync<AccountRecord>(sql, new { customerTypes }, transaction)).ToList();
         }
 
         /// <inheritdoc/>
