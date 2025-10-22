@@ -28,5 +28,6 @@ namespace BatchIDnumber.Const
         Unknown = 0,
         CSV = 1,
         Json = 2,
+        Txt = 3,
     }
 }

@@ -50,6 +50,7 @@
             {
                 ".csv" => FileFormat.CSV,
                 ".json" => FileFormat.Json,
+                ".txt" => FileFormat.Txt,
                 _ => throw new NotSupportedException($"Unsupported file format: {fileExtension}")
             };
         }

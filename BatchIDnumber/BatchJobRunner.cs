@@ -1,5 +1,6 @@
 ﻿using BatchIDnumber.Const;
 using BatchIDnumber.Service.Interface;
+using BatchIDnumber.Util;
 using CommonLib.Utils;
 using DBEntities.Const;
 using Infrastructure.Models;
@@ -41,6 +42,9 @@ namespace BatchIDnumber
                         break;
                     case FileFormat.Json:
                         accountLists = JsonFileUtil.ReadFromJsonFile<AccountRecord>(batchConfigOption.GetAccListPath());
+                        break;
+                    case FileFormat.Txt:
+                        accountLists = TextUtil.FromTextFile(batchConfigOption.GetAccListPath());
                         break;
                     default:
                         accountLists = CsvFileUtil.ReadFromCsvFile<AccountRecord>(batchConfigOption.GetAccListPath());
