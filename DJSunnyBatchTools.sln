@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{25D58A08-AC2A-49B2-817D-3B5CC622A157}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckFormatCode", "..\TEST\TEST\ConsoleApp1\ConsoleApp1\CheckFormatCode.csproj", "{4CC09211-DA73-C32E-D99C-6807466C3140}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckFormatCode", "CheckFormatCode\CheckFormatCode.csproj", "{4CC09211-DA73-C32E-D99C-6807466C3140}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
