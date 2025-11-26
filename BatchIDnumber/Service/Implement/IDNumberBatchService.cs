@@ -10,6 +10,7 @@ using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using CommonLib.Models;
 
 namespace BatchIDnumber.Service.Implement
 {
@@ -43,28 +44,33 @@ namespace BatchIDnumber.Service.Implement
         public async Task Process(List<AccountRecord> accountRecords)
         {
             try
-            {
-                //過濾掉統編為公司戶的清單
-                accountRecords = accountRecords.Where(x => TaiwanIdValidator.Validate(x.IDNumber).Type != IdType.UnifiedBusinessNumber).ToList();
+            {                
+                // 將 List<AccountList> 轉換為 List<OrdersView>
+                List<OrdersView> ordersViewList = accountRecords
+                    .Where(x => {
+                        ValidationResult validationResult = TaiwanIdValidator.Validate(x.IDNumber);
+                        return validationResult.Type != IdType.UnifiedBusinessNumber && validationResult.Type != IdType.Unknown;
+                    }) //過濾掉統編為公司戶的清單以及包含#的統編
+                    .Select(acc => new OrdersView
+                    {
+                        AccNo = acc.AccNo,
+                        IDNumber = acc.IDNumber,
+                        CustomerType = acc.CustomerType,
+                        IsSingle = false // 初始化 IsSingle 屬性
+                    }).ToList();
 
-                // 步驟 2: 將 List<AccountList> 轉換為 List<OrdersView>
-                List<OrdersView> ordersViewList = accountRecords.Select(acc => new OrdersView
-                {
-                    AccNo = acc.AccNo,
-                    IDNumber = acc.IDNumber,
-                    CustomerType = acc.CustomerType,
-                    IsSingle = false // 初始化 IsSingle 屬性
-                }).ToList();
-
-
-                await MarkOrderSingularity(ordersViewList);
+                Console.WriteLine("找出標記所有只有單一統編的帳號");
+                await MarkOrderSingularity(ordersViewList);                
                 List<ReportViewModel> reports = new();
-                
+
+                Console.WriteLine("執行身分別調整與相關資料表的統編調整...");
+                Console.WriteLine("處理單一統編的帳號...");
                 foreach (OrdersView ordersView in ordersViewList.Where(o => o.IsSingle))
                 {
                     reports.Add(await ProcessSingleOrders(ordersView));
                 }
 
+                Console.WriteLine("處理複數統編的帳號...");
                 foreach (IGrouping<string, OrdersView> group in ordersViewList.Where(o => !o.IsSingle).GroupBy(o => o.IDNumber))
                 {
                     int idnumberCount = 0;
@@ -74,6 +80,7 @@ namespace BatchIDnumber.Service.Implement
                     }
                 }
 
+                Console.WriteLine("送入資料庫處理中...");
                 unitOfWork.Commit();
                 CreateExcelReport(reports);
             }
@@ -102,32 +109,36 @@ namespace BatchIDnumber.Service.Implement
 
             try
             {
-                currentAction = "CustomerDataRepository.UpdateIDAndType";
-                await unitOfWork.CustomerDataRepository.UpdateIDAndType(report);
+                //確認orders是否存在該帳號以及Idnumber                
+                if (await unitOfWork.OrdersRepository.CheckOrders(report))
+                {
+                    currentAction = "CustomerDataRepository.UpdateIDAndType";
+                    await unitOfWork.CustomerDataRepository.UpdateIDAndType(report);
 
-                currentAction = "CustomerDataRepository.Delete";
-                await unitOfWork.CustomerDataRepository.Delete(report.IDNumber);
+                    currentAction = "CustomerDataRepository.Delete";
+                    await unitOfWork.CustomerDataRepository.Delete(report.IDNumber);
 
-                currentAction = "OrdersRepository.Update";
-                await unitOfWork.OrdersRepository.Update(report);
+                    currentAction = "OrdersRepository.Update";
+                    await unitOfWork.OrdersRepository.Update(report);
 
-                currentAction = "CombinidRepository.Update";
-                await unitOfWork.CombinidRepository.Update(report);
+                    currentAction = "CombinidRepository.Update";
+                    await unitOfWork.CombinidRepository.Update(report);
 
-                currentAction = "PhotoRepository.UpdateIDNumber";
-                await unitOfWork.PhotoRepository.UpdateIDNumber(report);
+                    currentAction = "PhotoRepository.UpdateIDNumber";
+                    await unitOfWork.PhotoRepository.UpdateIDNumber(report);
 
-                currentAction = "IdentifycardRepository.UpdateIDNumber";
-                await unitOfWork.IdentifycardRepository.UpdateIDNumber(report);
+                    currentAction = "IdentifycardRepository.UpdateIDNumber";
+                    await unitOfWork.IdentifycardRepository.UpdateIDNumber(report);
 
-                currentAction = "OldPhotoRepository.UpdateIDNumber";
-                await unitOfWork.OldPhotoRepository.UpdateIDNumber(report);
+                    currentAction = "OldPhotoRepository.UpdateIDNumber";
+                    await unitOfWork.OldPhotoRepository.UpdateIDNumber(report);
 
-                currentAction = "OldIdentifycardRepository.UpdateIDNumber";
-                await unitOfWork.OldIdentifycardRepository.UpdateIDNumber(report);
+                    currentAction = "OldIdentifycardRepository.UpdateIDNumber";
+                    await unitOfWork.OldIdentifycardRepository.UpdateIDNumber(report);
 
-                report.Result = IDNumberChangeResult.Success;
-                await SetReportAccName(report);
+                    report.Result = IDNumberChangeResult.Success;
+                    await SetReportAccName(report);
+                }             
             }
             catch (Exception ex)
             {                
@@ -156,32 +167,35 @@ namespace BatchIDnumber.Service.Implement
 
             try
             {
-                List<OldPhoto> oldPhotos = await unitOfWork.OldPhotoRepository.GetOldPhotos(report.IDNumber);
-                List<OldIdentifycard> oldIdentifycards = await unitOfWork.OldIdentifycardRepository.GetOldIdentifycards(report.IDNumber);
+                if (await unitOfWork.OrdersRepository.CheckOrders(report))
+                {
+                    List<OldPhoto> oldPhotos = await unitOfWork.OldPhotoRepository.GetOldPhotos(report.IDNumber);
+                    List<OldIdentifycard> oldIdentifycards = await unitOfWork.OldIdentifycardRepository.GetOldIdentifycards(report.IDNumber);
 
-                currentAction = "CustomerDataRepository.CopyWithNewId";
-                await unitOfWork.CustomerDataRepository.CopyWithNewId(report);
+                    currentAction = "CustomerDataRepository.CopyWithNewId";
+                    await unitOfWork.CustomerDataRepository.CopyWithNewId(report);
 
-                currentAction = "OrdersRepository.Update";
-                await unitOfWork.OrdersRepository.Update(report);
+                    currentAction = "OrdersRepository.Update";
+                    await unitOfWork.OrdersRepository.Update(report);
 
-                currentAction = "CombinidRepository.InsertCopy";
-                await unitOfWork.CombinidRepository.InsertCopy(report);
+                    currentAction = "CombinidRepository.InsertCopy";
+                    await unitOfWork.CombinidRepository.InsertCopy(report);
 
-                currentAction = "PhotoRepository.InsertCopy";
-                await unitOfWork.PhotoRepository.InsertCopy(report);
+                    currentAction = "PhotoRepository.InsertCopy";
+                    await unitOfWork.PhotoRepository.InsertCopy(report);
 
-                currentAction = "IdentifycardRepository.InsertCopy";
-                await unitOfWork.IdentifycardRepository.InsertCopy(report);
+                    currentAction = "IdentifycardRepository.InsertCopy";
+                    await unitOfWork.IdentifycardRepository.InsertCopy(report);
 
-                currentAction = "OldPhotoRepository.Inserts";
-                await unitOfWork.OldPhotoRepository.Inserts(oldPhotos, report.NewIDNumber);
+                    currentAction = "OldPhotoRepository.Inserts";
+                    await unitOfWork.OldPhotoRepository.Inserts(oldPhotos, report.NewIDNumber);
 
-                currentAction = "OldIdentifycardRepository.Inserts";
-                await unitOfWork.OldIdentifycardRepository.Inserts(oldIdentifycards, report.NewIDNumber);
+                    currentAction = "OldIdentifycardRepository.Inserts";
+                    await unitOfWork.OldIdentifycardRepository.Inserts(oldIdentifycards, report.NewIDNumber);
 
-                report.Result = IDNumberChangeResult.Success;
-                await SetReportAccName(report);
+                    report.Result = IDNumberChangeResult.Success;
+                    await SetReportAccName(report);
+                }                
             }
             catch (Exception ex)
             {
@@ -199,28 +213,26 @@ namespace BatchIDnumber.Service.Implement
         {            
             List<string> uniqueIds = partialOrders.Select(o => o.IDNumber).Distinct().ToList();
 
-            //List<string> duplicateIds = await unitOfWork.OrdersRepository.GetDuplicateOrderIds(uniqueIds);
+            HashSet<string> allDuplicateIds = new();
+            int batchSize = 2000;
 
-            HashSet<string> allDuplicateIds = new HashSet<string>();
-
-            // 將 uniqueIds 清單分批，每批 1000 個
-            int batchSize = 100;
+            // 將 uniqueIds 清單分批，每批 2000 個            
             foreach (var batch in uniqueIds.Chunk(batchSize))
             {
                 // 針對每一批 ID 呼叫資料庫
                 List<string> duplicateIdsInBatch = await unitOfWork.OrdersRepository.GetDuplicateOrderIds(batch.ToList());
 
                 // 將結果加入總清單中
-                foreach (var id in duplicateIdsInBatch)
+                foreach (string id in duplicateIdsInBatch)
                 {
                     allDuplicateIds.Add(id);
                 }
             }
 
-            foreach (OrdersView order in partialOrders)
+            partialOrders.ForEach(order =>
             {
                 order.IsSingle = !allDuplicateIds.Contains(order.IDNumber);
-            }            
+            });
         }
 
         private async Task SetReportAccName(ReportViewModel report)

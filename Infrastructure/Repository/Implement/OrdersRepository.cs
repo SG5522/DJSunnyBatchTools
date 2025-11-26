@@ -45,12 +45,44 @@ namespace Infrastructure.Repository.Implement
         /// <inheritdoc/>
         public async Task<List<string>> GetDuplicateOrderIds(List<string> idsToSearch)
         {
-            string sql = $@"SELECT 
-                            IDNumber 
-                            From {DbTableName.Orders} 
-                            WHERE IDnumber IN @Ids";
-                
-            return (await connection.QueryAsync<string>(sql, new { Ids = idsToSearch }, transaction)).ToList();
+
+            DynamicParameters parameters = new();
+
+            List<string> valuesList = idsToSearch.Select((id, index) =>
+            {
+                string paramName = $"@p{index}";
+                parameters.Add(paramName, id);
+                return $"({paramName})";
+            }).ToList();
+
+            string valuesSql = string.Join(",", valuesList);
+
+            string finalQuerySql = $@"
+                                    SELECT T1.IDnumber
+                                    FROM {DbTableName.Orders} AS T1
+                                    INNER JOIN 
+                                    (
+                                        -- 使用 VALUES 列表作為一個臨時表 (Derived Table)
+                                        VALUES {valuesSql}
+                                    ) AS T2 (IDnumber) ON T1.IDnumber = T2.IDnumber
+                                    GROUP BY T1.IDnumber
+                                    HAVING COUNT(T1.IDnumber) > 1;
+                                    ";
+
+            // 執行 JOIN 查詢，傳入所有參數
+            return (await connection.QueryAsync<string>(finalQuerySql, parameters, transaction)).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> CheckOrders(CopyParam copyParam)
+        {            
+
+            string sql = $@"SELECT Count(*) From {DbTableName.Orders} As o
+                            Inner Join {DbTableName.Maincase} AS m ON o.Accno = m.AccNo 
+                            Where o.Accno = @AccNo 
+                            And o.IDnumber = @IDNumber";
+
+            return (await connection.ExecuteScalarAsync<int>(sql, copyParam, transaction)) > 0 ;
         }
 
         /// <inheritdoc/>

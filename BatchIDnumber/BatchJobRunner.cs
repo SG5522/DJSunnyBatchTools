@@ -34,7 +34,7 @@ namespace BatchIDnumber
                 var batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
 
                 List<AccountRecord>? accountLists = new();
-
+                Console.WriteLine("開始抓取清單資料");
                 switch (batchConfigOption.FileFormat)
                 {
                     case FileFormat.CSV:
@@ -44,23 +44,25 @@ namespace BatchIDnumber
                         accountLists = JsonFileUtil.ReadFromJsonFile<AccountRecord>(batchConfigOption.GetAccListPath());
                         break;
                     case FileFormat.Txt:
-                        accountLists = TextUtil.FromTextFile(batchConfigOption.GetAccListPath());
+                        accountLists = TextFileUtil.FromTextFile(batchConfigOption.GetAccListPath());
                         break;
                     default:
                         accountLists = CsvFileUtil.ReadFromCsvFile<AccountRecord>(batchConfigOption.GetAccListPath());
                         break;
                 }
-
+                Console.WriteLine($"清單資料筆數: {accountLists?.Count() ?? 0}");
 
                 if (accountLists != null)
                 {
                     logger.LogInformation("開始處理...");
+                    Console.WriteLine("===開始處理===");
                     //過濾帳號只留有籌備處與聯名戶的帳號
                     accountLists = accountLists.Where(accno => accno.CustomerType == CustomerType.Preparation 
                                                             || accno.CustomerType == CustomerType.JointName).ToList();
 
                     await batchService.Process(accountLists);
-                    logger.LogInformation("處理完成。");                    
+                    logger.LogInformation("處理完成。");
+                    Console.WriteLine("===處理完成===");
                 }
             }
 

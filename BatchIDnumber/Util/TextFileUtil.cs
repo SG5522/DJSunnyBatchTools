@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace BatchIDnumber.Util
 {
-    public class TextUtil
+    public class TextFileUtil
     {
         /// <summary>
         /// 銀行帳號3-2-9格式
@@ -34,7 +34,7 @@ namespace BatchIDnumber.Util
         /// </summary>
         /// <param name="lineText"></param>
         /// <returns></returns>
-        private static AccountRecord LineTextToClass (string lineText)
+        private static AccountRecord LineTextToClass(string lineText)
             =>  new(){
                         AccNo = lineText.Substring(4, 16).Trim(),
                         IDNumber = lineText.Substring(21, 10).Trim(),
