@@ -46,6 +46,8 @@ var builder = Host.CreateDefaultBuilder(args).ConfigureLogging(loggingBuilder =>
         });
 
         // 註冊你的主要業務服務
+        services.AddScoped<IBatchQueryService, BatchQueryService>();
+        services.AddScoped<IReportService, ReportService>();        
         services.AddScoped<IIDNumberBatchService, IDNumberBatchService>();
 
         // 註冊一個 Hosted Service 來執行你的批次作業

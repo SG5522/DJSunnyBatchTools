@@ -17,7 +17,9 @@ namespace BatchIDnumber.Service.Implement
     public class IDNumberBatchService : IIDNumberBatchService
     {
         private readonly IUnitOfWork unitOfWork;
-        private readonly ILogger<IDNumberBatchService> logger;
+        private readonly IReportService reportService;
+        private readonly IBatchQueryService batchQueryService;
+        private readonly ILogger<IDNumberBatchService> logger;        
         private BatchConfigOption batchConfigOption;
 
         /// <summary>
@@ -25,9 +27,15 @@ namespace BatchIDnumber.Service.Implement
         /// </summary>
         /// <param name="connectionString"></param>
         /// <param name="">logger</param>
-        public IDNumberBatchService(IUnitOfWork unitOfWork, ILogger<IDNumberBatchService> logger, IOptionsMonitor<BatchConfigOption> optionsMonitor)
+        public IDNumberBatchService(IUnitOfWork unitOfWork,
+            IReportService reportService,
+            IBatchQueryService batchQueryService,
+            ILogger<IDNumberBatchService> logger, 
+            IOptionsMonitor<BatchConfigOption> optionsMonitor)
         {
             this.unitOfWork = unitOfWork;
+            this.reportService = reportService;
+            this.batchQueryService = batchQueryService;
             this.logger = logger;
             batchConfigOption = optionsMonitor.CurrentValue;
         }
@@ -47,19 +55,19 @@ namespace BatchIDnumber.Service.Implement
             {                
                 // 將 List<AccountList> 轉換為 List<OrdersView>
                 List<OrdersView> ordersViewList = accountRecords
-                    .Where(x => {
-                        ValidationResult validationResult = TaiwanIdValidator.Validate(x.IDNumber);
-                        return validationResult.Type != IdType.UnifiedBusinessNumber && validationResult.Type != IdType.Unknown;
-                    }) //過濾掉統編為公司戶的清單以及包含#的統編
-                    .Select(acc => new OrdersView
-                    {
-                        AccNo = acc.AccNo,
-                        IDNumber = acc.IDNumber,
-                        CustomerType = acc.CustomerType,
-                        IsSingle = false // 初始化 IsSingle 屬性
-                    }).ToList();
+                        .Where(x => {
+                            ValidationResult validationResult = TaiwanIdValidator.Validate(x.IDNumber);
+                            return validationResult.Type != IdType.UnifiedBusinessNumber && validationResult.Type != IdType.Unknown;
+                        }) //過濾掉統編為公司戶的清單以及包含#的統編
+                        .Select(acc => new OrdersView
+                        {
+                            AccNo = acc.AccNo,
+                            IDNumber = acc.IDNumber,
+                            CustomerType = acc.CustomerType,
+                            IsSingle = false // 初始化 IsSingle 屬性
+                        }).ToList();
 
-                Console.WriteLine("找出標記所有只有單一統編的帳號");
+                Console.WriteLine("標記所有只有單一統編的帳號");
                 await MarkOrderSingularity(ordersViewList);                
                 List<ReportViewModel> reports = new();
 
@@ -82,11 +90,12 @@ namespace BatchIDnumber.Service.Implement
 
                 Console.WriteLine("送入資料庫處理中...");
                 unitOfWork.Commit();
-                CreateExcelReport(reports);
+                reportService.CreateExcelReport(reports, ExcelHearderConsts.BatchIDNumberChange, batchConfigOption.GetReportPath());                
+                await reportService.CreateIgnoreListExcelReport(accountRecords);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Process Error {ex.Message}");
+                logger.LogError(ex, "Process Error");
                 unitOfWork.Rollback();
             }            
         }
@@ -136,13 +145,13 @@ namespace BatchIDnumber.Service.Implement
                     currentAction = "OldIdentifycardRepository.UpdateIDNumber";
                     await unitOfWork.OldIdentifycardRepository.UpdateIDNumber(report);
 
+                    report.AccName =  await batchQueryService.GetAccountName(report.AccNo);
                     report.Result = IDNumberChangeResult.Success;
-                    await SetReportAccName(report);
                 }             
             }
             catch (Exception ex)
             {                
-                logger.LogError("帳號：{@AccNo} 處理失敗，在動作 {Action} 時發生錯誤 {@ErrorMessage} ", ordersView.AccNo, currentAction, ex.Message);
+                logger.LogError(ex, "帳號：{@AccNo} 處理失敗，在動作 {Action} 時發生錯誤 ", ordersView.AccNo, currentAction);
             }
             
             return report;
@@ -193,13 +202,14 @@ namespace BatchIDnumber.Service.Implement
                     currentAction = "OldIdentifycardRepository.Inserts";
                     await unitOfWork.OldIdentifycardRepository.Inserts(oldIdentifycards, report.NewIDNumber);
 
+                    report.AccName = await batchQueryService.GetAccountName(report.AccNo);
                     report.Result = IDNumberChangeResult.Success;
-                    await SetReportAccName(report);
+                    
                 }                
             }
             catch (Exception ex)
             {
-                logger.LogError("帳號：{@AccNo} 處理失敗，在動作 {Action} 時發生錯誤 {@ErrorMessage} ", ordersView.AccNo, currentAction, ex.Message);
+                logger.LogError(ex, "帳號：{@AccNo} 處理失敗，在動作 {Action} 時發生錯誤", ordersView.AccNo, currentAction);
             }
 
             return report;
@@ -234,9 +244,6 @@ namespace BatchIDnumber.Service.Implement
                 order.IsSingle = !allDuplicateIds.Contains(order.IDNumber);
             });
         }
-
-        private async Task SetReportAccName(ReportViewModel report)
-           => report.AccName = await unitOfWork.MainCaseRepository.GetAccName(report.AccNo) ?? "主表找不到資料";
         
 
         /// <summary>

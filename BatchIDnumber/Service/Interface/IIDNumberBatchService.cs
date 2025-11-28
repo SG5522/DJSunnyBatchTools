@@ -1,5 +1,6 @@
 ﻿
 
+using BatchIDnumber.Models;
 using Infrastructure.Models;
 
 namespace BatchIDnumber.Service.Interface
@@ -19,5 +20,6 @@ namespace BatchIDnumber.Service.Interface
         /// <param name="ordersViews"></param>
         /// <returns></returns>
         Task Process(List<AccountRecord> ordersViews);
+
     }
 }

@@ -27,9 +27,14 @@
         }
 
         /// <summary>
-        /// 完成後的報表
+        /// 完成後的報表檔名
         /// </summary>
         public string ReportFileName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 被過濾不處理的檔名
+        /// </summary>
+        public string IgnoreFileName { get; set; } = string.Empty;
 
         /// <summary>
         /// 檔案格式
@@ -40,8 +45,18 @@
             => Path.Combine(string.IsNullOrWhiteSpace(DirectoryPath) ? Directory.GetCurrentDirectory() : DirectoryPath, AccountListFileName);
 
         public string GetReportPath()
-            => Path.Combine(string.IsNullOrWhiteSpace(DirectoryPath) ? Directory.GetCurrentDirectory() : DirectoryPath, ReportFileName);
-        
+            => Path.Combine(string.IsNullOrWhiteSpace(DirectoryPath) ? Directory.GetCurrentDirectory() : DirectoryPath, GetFileNameWithTime(ReportFileName));
+
+        public string GetReportIgnorePath()
+            => Path.Combine(string.IsNullOrWhiteSpace(DirectoryPath) ? Directory.GetCurrentDirectory() : DirectoryPath, GetFileNameWithTime(IgnoreFileName));
+
+
+        private string GetFileNameWithTime(string reportFileName)      
+            =>  Path.GetFileNameWithoutExtension(reportFileName) +
+                DateTime.Now.ToString("yyyyMMddHHmmss") +
+                Path.GetExtension(reportFileName);
+
+
         private FileFormat GetFileFormat(string fileName)
         {
             string fileExtension = Path.GetExtension(fileName);
@@ -54,5 +69,7 @@
                 _ => throw new NotSupportedException($"Unsupported file format: {fileExtension}")
             };
         }
+
+
     }
 }

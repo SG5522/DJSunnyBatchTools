@@ -35,6 +35,7 @@ namespace TestApp
 
             // 註冊你的主要業務服務
             services.AddScoped<IIDNumberBatchService, IDNumberBatchService>();
+            services.AddScoped<IReportService, ReportService>();
 
             // 建立 ServiceProvider
             var serviceProvider = services.BuildServiceProvider();

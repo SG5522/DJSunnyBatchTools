@@ -66,7 +66,7 @@ namespace BatchIDnumber
                 }
             }
 
-            logger.LogInformation("批次作業執行結束。");
+            logger.LogInformation("批次作業結束。");
 
             // 為了讓主機自動結束，可以向它發送停止訊號
             IHostApplicationLifetime hostApplicationLifetime = serviceProvider.GetRequiredService<IHostApplicationLifetime>();
