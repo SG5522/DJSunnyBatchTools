@@ -11,6 +11,8 @@ namespace Infrastructure.Models
         /// </summary>
         public CustomerType CustomerType { get; set; }
 
+        public int CustomerType2 { get; set; }
+
         public override string ToString()
         {
             string customerTypeString = CustomerType.GetDescription();

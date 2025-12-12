@@ -2,6 +2,7 @@
 using BatchIDnumber.Models;
 using BatchIDnumber.Service.Interface;
 using CommonLib.Enums;
+using CommonLib.Models;
 using CommonLib.Utils;
 using DBEntities.Entities;
 using DJSpire.Models;
@@ -10,7 +11,7 @@ using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using CommonLib.Models;
+using System.Text;
 
 namespace BatchIDnumber.Service.Implement
 {
@@ -52,7 +53,9 @@ namespace BatchIDnumber.Service.Implement
         public async Task Process(List<AccountRecord> accountRecords)
         {
             try
-            {                
+            {
+                Console.WriteLine("列出忽略清單至Excel...");
+                await reportService.CreateIgnoreListExcelReport(accountRecords);
                 // 將 List<AccountList> 轉換為 List<OrdersView>
                 List<OrdersView> ordersViewList = accountRecords
                         .Where(x => {
@@ -68,7 +71,7 @@ namespace BatchIDnumber.Service.Implement
                         }).ToList();
 
                 Console.WriteLine("標記所有只有單一統編的帳號");
-                await MarkOrderSingularity(ordersViewList);                
+                await MarkOrderSingularity(ordersViewList);
                 List<ReportViewModel> reports = new();
 
                 Console.WriteLine("執行身分別調整與相關資料表的統編調整...");
@@ -88,16 +91,51 @@ namespace BatchIDnumber.Service.Implement
                     }
                 }
 
-                Console.WriteLine("送入資料庫處理中...");
+                Console.WriteLine("送入資料庫處理中...");                
                 unitOfWork.Commit();
                 reportService.CreateExcelReport(reports, ExcelHearderConsts.BatchIDNumberChange, batchConfigOption.GetReportPath());                
-                await reportService.CreateIgnoreListExcelReport(accountRecords);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Process Error");
                 unitOfWork.Rollback();
             }            
+        }
+
+        public async Task CreateAccTestTxt()
+        {
+            List<AccTest> accTests = unitOfWork.AccTestRepository.GetAccTest();
+         
+            string filePath = "AccTestOutput.txt";
+
+            // 使用 StringBuilder 來高效地建立大字串
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var accTest in accTests)
+            {
+                // ... (同上步驟 4, 5, 6 格式化邏輯) ...
+                string firstSegment = accTest.AccNo.Length >= 3 ? accTest.AccNo.Substring(0, 3) : string.Empty;
+                string secondSegment = accTest.AccNo;
+                string thirdSegment = accTest.IDNumber;
+                int customerTypeInt = (int)accTest.CustomerType;
+
+                string line = $"{firstSegment} {secondSegment} {thirdSegment.PadRight(15)} {customerTypeInt}";
+
+                // 加入字串並換行
+                sb.AppendLine(line);
+            }
+
+            // 非同步將整個大字串寫入檔案
+            await File.WriteAllTextAsync(filePath, sb.ToString(), Encoding.UTF8);
+        }      
+
+        public async Task CreateTestData(List<AccountRecord> accountRecords)
+        {
+            foreach (var accountRecord in accountRecords)
+            {
+                await unitOfWork.AccTestRepository.InsertAccTest(accountRecord);
+            }
+            unitOfWork.Commit();
         }
 
         /// <summary>

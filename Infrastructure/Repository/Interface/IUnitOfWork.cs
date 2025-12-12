@@ -58,6 +58,11 @@ namespace Infrastructure.Repository.Interface
         IMainCaseRepository MainCaseRepository { get; }
 
         /// <summary>
+        /// 測試用
+        /// </summary>
+        IAccTestRepository AccTestRepository { get; }
+
+        /// <summary>
         /// 提交所有在這個工作單元中累積的資料庫變更。
         /// 如果所有操作都成功，則將所有處理寫到資料庫中。
         /// </summary>

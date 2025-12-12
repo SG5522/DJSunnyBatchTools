@@ -3,7 +3,8 @@
     "BatchIDnumber": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "UAT",
+        //"DOTNET_ENVIRONMENT": "Development"
         //"DOTNET_ENVIRONMENT": "Production"        
       }
     }
