@@ -102,14 +102,12 @@ namespace BatchIDnumber.Service.Implement
             }            
         }
 
-        public async Task CreateAccTestTxt()
+        public async Task CreateAccTestTxt(string filePath = "AccTestOutput.txt")
         {
-            List<AccTest> accTests = unitOfWork.AccTestRepository.GetAccTest();
-         
-            string filePath = "AccTestOutput.txt";
+            List<AccTest> accTests = unitOfWork.AccTestRepository.GetAccTest();                    
 
             // 使用 StringBuilder 來高效地建立大字串
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             foreach (var accTest in accTests)
             {
