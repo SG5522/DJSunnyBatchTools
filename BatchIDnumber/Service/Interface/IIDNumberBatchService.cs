@@ -32,7 +32,7 @@ namespace BatchIDnumber.Service.Interface
         /// test表
         /// </summary>
         /// <returns></returns>
-        Task CreateAccTestTxt();
+        Task CreateAccTestTxt(string filePath = "AccTestOutput.txt");
 
     }
 }
