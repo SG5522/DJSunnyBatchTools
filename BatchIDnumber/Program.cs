@@ -2,7 +2,6 @@
 using BatchIDnumber.Const;
 using BatchIDnumber.Service.Implement;
 using BatchIDnumber.Service.Interface;
-using BatchIDnumber.Util;
 using Infrastructure.Repository.Implement;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Configuration;
@@ -10,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-
-// 在啟動時呼叫 LogUtil 來清理舊日誌檔
-LogUtil.CleanOldLogs("logs/results/results-*.json", 10);
 
 //建立主機 (Host)
 var builder = Host.CreateDefaultBuilder(args).ConfigureLogging(loggingBuilder =>{loggingBuilder.ClearProviders();})

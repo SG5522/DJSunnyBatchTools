@@ -60,7 +60,7 @@ namespace BatchIDnumber.Service.Implement
                 List<OrdersView> ordersViewList = accountRecords
                         .Where(x => {
                             ValidationResult validationResult = TaiwanIdValidator.Validate(x.IDNumber);
-                            return validationResult.Type != IdType.UnifiedBusinessNumber && validationResult.Type != IdType.Unknown;
+                            return validationResult.Type != IdType.UnifiedBusinessNumber || validationResult.Type != IdType.Unknown;
                         }) //過濾掉統編為公司戶的清單以及包含#的統編
                         .Select(acc => new OrdersView
                         {

@@ -2,10 +2,8 @@
   "profiles": {
     "BatchIDnumber": {
       "commandName": "Project",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "UAT",
-        //"DOTNET_ENVIRONMENT": "Development"
-        //"DOTNET_ENVIRONMENT": "Production"        
+      "environmentVariables": {        
+        "DOTNET_ENVIRONMENT": "Development"        
       }
     }
   }
