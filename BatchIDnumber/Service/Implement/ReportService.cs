@@ -71,7 +71,7 @@ namespace BatchIDnumber.Service.Implement
             // 如果沒有資料需要寫入，可以提前返回
             if (report.Count == 0)
             {
-                logger.LogWarning("沒有資料需要生成 Excel 報表。");
+                logger.LogWarning("沒有資料需要生成 {TypeName} Excel 報表。", typeof(T).Name);
                 return;
             }
 

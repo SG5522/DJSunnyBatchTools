@@ -15,13 +15,13 @@ namespace BatchIDnumber
     {
         private readonly IServiceProvider serviceProvider;
         private readonly ILogger<BatchJobRunner> logger;
-        private BatchConfigOption batchConfigOption;
+        private readonly BatchConfigOption batchConfigOption;
 
-        public BatchJobRunner(IServiceProvider serviceProvider, ILogger<BatchJobRunner> logger, IOptionsMonitor<BatchConfigOption> optionsMonitor)
+        public BatchJobRunner(IServiceProvider serviceProvider, ILogger<BatchJobRunner> logger, IOptions<BatchConfigOption> options)
         {
             this.serviceProvider = serviceProvider;
             this.logger = logger;
-            batchConfigOption = optionsMonitor.CurrentValue;
+            batchConfigOption = options.Value;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -31,10 +31,10 @@ namespace BatchIDnumber
             // 建立一個 Scope 來處理 Scoped 的服務
             using (IServiceScope scope = serviceProvider.CreateScope())
             {
-                var batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
+                IIDNumberBatchService batchService = scope.ServiceProvider.GetRequiredService<IIDNumberBatchService>();
 
                 List<AccountRecord>? accountLists = new();
-                Console.WriteLine("開始抓取清單資料");
+                Console.WriteLine($"開始抓取清單資料 檔名：{batchConfigOption.AccountListFileName}");
                 switch (batchConfigOption.FileFormat)
                 {
                     case FileFormat.CSV:
@@ -46,10 +46,15 @@ namespace BatchIDnumber
                     case FileFormat.Txt:
                         accountLists = TextFileUtil.FromTextFile(batchConfigOption.GetAccListPath());
                         break;
+                    case FileFormat.Unknown:
+                        accountLists = null;
+                        Console.WriteLine($"無法辯視清單格式");
+                        break;
                     default:
                         accountLists = CsvFileUtil.ReadFromCsvFile<AccountRecord>(batchConfigOption.GetAccListPath());
                         break;
                 }
+                logger.LogInformation("清單資料筆數: {@accountListCount}", accountLists?.Count() ?? 0);                
                 Console.WriteLine($"清單資料筆數: {accountLists?.Count() ?? 0}");
 
                 if (accountLists != null)

@@ -1,7 +1,4 @@
-﻿
-
-using BatchIDnumber.Models;
-using Infrastructure.Models;
+﻿using Infrastructure.Models;
 
 namespace BatchIDnumber.Service.Interface
 {
@@ -20,19 +17,5 @@ namespace BatchIDnumber.Service.Interface
         /// <param name="ordersViews"></param>
         /// <returns></returns>
         Task Process(List<AccountRecord> ordersViews);
-
-        /// <summary>
-        /// 註入test表到AccTest
-        /// </summary>
-        /// <param name="accountRecords"></param>
-        /// <returns></returns>
-        Task CreateTestData(List<AccountRecord> accountRecords);
-
-        /// <summary>
-        /// test表
-        /// </summary>
-        /// <returns></returns>
-        Task CreateAccTestTxt(string filePath = "AccTestOutput.txt");
-
     }
 }

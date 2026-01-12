@@ -2,8 +2,8 @@
   "profiles": {
     "BatchIDnumber": {
       "commandName": "Project",
-      "environmentVariables": {        
-        "DOTNET_ENVIRONMENT": "Development"        
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "SIT"
       }
     }
   }

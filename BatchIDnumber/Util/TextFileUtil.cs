@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace BatchIDnumber.Util
 {
-    public class TextFileUtil
+    public partial class TextFileUtil
     {
         /// <summary>
         /// 銀行帳號3-2-9格式
@@ -13,33 +13,28 @@ namespace BatchIDnumber.Util
 
         private const string subCode = @"-00-";
 
-        private static readonly Regex Format329 = new(RegexPattern, RegexOptions.Compiled);
+        [GeneratedRegex(RegexPattern, RegexOptions.Compiled)]
+        private static partial Regex GetFormat329();
 
         /// <summary>
         /// 將文字檔的資料轉成List<AccountRecord>
         /// </summary>
         /// <param name="path">路徑</param>
         /// <returns></returns>
-        public static List<AccountRecord> FromTextFile (string path)
-            => File.ReadAllLines(path)
-                    .Where(lineText => !string.IsNullOrWhiteSpace(lineText)
-                            && lineText.Length >= 35
-                            && lineText.Substring(7, 4) != subCode
-                            && Format329.IsMatch(lineText.Substring(4, 16).Trim()))
-                    .Select(LineTextToClass)
-                    .ToList();
-
-        /// <summary>
-        /// 針對每行Text做class轉換
-        /// </summary>
-        /// <param name="lineText"></param>
-        /// <returns></returns>
-        private static AccountRecord LineTextToClass(string lineText)
-            =>  new(){
-                        AccNo = lineText.Substring(4, 16).Trim(),
-                        IDNumber = lineText.Substring(21, 10).Trim(),
-                        CustomerType = (CustomerType)(int)char.GetNumericValue(lineText[^1]) //[^1] 指倒數最後一個
-                };
-        
+        public static List<AccountRecord> FromTextFile(string path)
+            => File.ReadLines(path)
+                    .Where(lineText => !string.IsNullOrWhiteSpace(lineText))
+                    //針對空白做拆分文字陣列
+                    .Select(lineText => lineText.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                    .Where(parts => parts.Length >= 4
+                                && !parts[1].Contains(subCode)
+                                && GetFormat329().IsMatch(parts[1])
+                    )
+                    .Select(parts => new AccountRecord
+                    {
+                        AccNo = parts[1],
+                        IDNumber = parts[2],
+                        CustomerType = (CustomerType)(int)char.GetNumericValue(parts[3][0])
+                    }).ToList();        
     }
 }

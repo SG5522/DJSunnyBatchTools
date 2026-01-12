@@ -11,35 +11,26 @@ using Infrastructure.Models;
 using Infrastructure.Repository.Interface;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text;
 
 namespace BatchIDnumber.Service.Implement
 {
-    public class IDNumberBatchService : IIDNumberBatchService
+    /// <summary>
+    /// 建置
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <param name="">logger</param>
+    public class IDNumberBatchService(
+        IUnitOfWork unitOfWork,
+        IReportService reportService,
+        IBatchQueryService batchQueryService,
+        ILogger<IDNumberBatchService> logger,
+        IOptions<BatchConfigOption> options) : IIDNumberBatchService
     {
-        private readonly IUnitOfWork unitOfWork;
-        private readonly IReportService reportService;
-        private readonly IBatchQueryService batchQueryService;
-        private readonly ILogger<IDNumberBatchService> logger;        
-        private BatchConfigOption batchConfigOption;
-
-        /// <summary>
-        /// 建置
-        /// </summary>
-        /// <param name="connectionString"></param>
-        /// <param name="">logger</param>
-        public IDNumberBatchService(IUnitOfWork unitOfWork,
-            IReportService reportService,
-            IBatchQueryService batchQueryService,
-            ILogger<IDNumberBatchService> logger, 
-            IOptionsMonitor<BatchConfigOption> optionsMonitor)
-        {
-            this.unitOfWork = unitOfWork;
-            this.reportService = reportService;
-            this.batchQueryService = batchQueryService;
-            this.logger = logger;
-            batchConfigOption = optionsMonitor.CurrentValue;
-        }
+        private readonly IUnitOfWork unitOfWork = unitOfWork;
+        private readonly IReportService reportService = reportService;
+        private readonly IBatchQueryService batchQueryService = batchQueryService;
+        private readonly ILogger<IDNumberBatchService> logger = logger;
+        private readonly BatchConfigOption batchConfigOption = options.Value;
 
         public async Task<List<AccountRecord>> GetOrders(List<string> customerTypes)
         {
@@ -100,40 +91,6 @@ namespace BatchIDnumber.Service.Implement
                 logger.LogError(ex, "Process Error");
                 unitOfWork.Rollback();
             }            
-        }
-
-        public async Task CreateAccTestTxt(string filePath = "AccTestOutput.txt")
-        {
-            List<AccTest> accTests = unitOfWork.AccTestRepository.GetAccTest();                    
-
-            // 使用 StringBuilder 來高效地建立大字串
-            StringBuilder sb = new();
-
-            foreach (var accTest in accTests)
-            {
-                // ... (同上步驟 4, 5, 6 格式化邏輯) ...
-                string firstSegment = accTest.AccNo.Length >= 3 ? accTest.AccNo.Substring(0, 3) : string.Empty;
-                string secondSegment = accTest.AccNo;
-                string thirdSegment = accTest.IDNumber;
-                int customerTypeInt = (int)accTest.CustomerType;
-
-                string line = $"{firstSegment} {secondSegment} {thirdSegment.PadRight(15)} {customerTypeInt}";
-
-                // 加入字串並換行
-                sb.AppendLine(line);
-            }
-
-            // 非同步將整個大字串寫入檔案
-            await File.WriteAllTextAsync(filePath, sb.ToString(), Encoding.UTF8);
-        }      
-
-        public async Task CreateTestData(List<AccountRecord> accountRecords)
-        {
-            foreach (var accountRecord in accountRecords)
-            {
-                await unitOfWork.AccTestRepository.InsertAccTest(accountRecord);
-            }
-            unitOfWork.Commit();
         }
 
         /// <summary>
