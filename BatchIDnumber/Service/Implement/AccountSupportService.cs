@@ -8,13 +8,9 @@ namespace BatchIDnumber.Service.Implement
 {
     /// <summary>
     /// 建立測試帳號用的處理
-    /// </summary>
-    /// <remarks>
-    /// 建置
-    /// </remarks>
-    /// <param name="unitOfWork"></param>
-    /// <param name="logger"></param>
-    public class AccountSupportService(IUnitOfWork unitOfWork, ILogger<AccountSupportService> logger) : IAccountSupportService
+    /// </summary>    
+    /// <param name="unitOfWork"></param>    
+    public class AccountSupportService(IUnitOfWork unitOfWork) : IAccountSupportService
     {
         private readonly IUnitOfWork unitOfWork = unitOfWork;        
 
